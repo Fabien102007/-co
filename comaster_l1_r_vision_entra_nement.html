@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÉcoMaster L1 — Révision & Entraînement</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Police Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icônes Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+        /* Animations d'apparition */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        /* Retournement 3D des Flashcards */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        /* Animations SVG personnalisées */
+        @keyframes dashDraw {
+            to { stroke-dashoffset: 0; }
+        }
+        .svg-draw {
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+            animation: dashDraw 2.2s ease-out forwards;
+        }
+        @keyframes floatPulse {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+        .svg-pulse {
+            animation: floatPulse 2.5s ease-in-out infinite;
+        }
+        @keyframes balanceTilt {
+            0%, 100% { transform: rotate(-6deg); }
+            50% { transform: rotate(9deg); }
+        }
+        .svg-tilt {
+            transform-origin: 200px 65px;
+            animation: balanceTilt 3.5s ease-in-out infinite;
+        }
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- BARRE DE NAVIGATION SUPÉRIEURE & 4 ONGLETS -->
+    <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / Titre du projet personnel -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('reviser')">
+                    <div class="bg-gradient-to-br from-indigo-600 to-emerald-600 text-white p-2 rounded-xl shadow-sm">
+                        <i data-lucide="line-chart" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white leading-none">
+                            ÉcoMaster <span class="text-indigo-600 dark:text-indigo-400">L1</span>
+                        </h1>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">
+                            Introduction à l'analyse économique &middot; Espace personnel
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Navigation principale (Desktop) -->
+                <nav class="hidden md:flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/70 dark:border-slate-700/70" aria-label="Onglets principaux">
+                    <button onclick="switchTab('reviser')" id="nav-reviser" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="check-square" class="w-4 h-4"></i>
+                        <span>Réviser</span>
+                    </button>
+                    <button onclick="switchTab('flashcards')" id="nav-flashcards" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                        <span>Flashcards</span>
+                    </button>
+                    <button onclick="switchTab('qcm')" id="nav-qcm" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                        <span>QCM Interactifs</span>
+                    </button>
+                    <button onclick="switchTab('progres')" id="nav-progres" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span>Progrès</span>
+                    </button>
+                </nav>
+
+                <!-- Bouton Mode Clair / Sombre -->
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleDarkMode()" title="Changer le thème" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition">
+                        <i data-lucide="moon" id="icon-moon" class="w-4 h-4"></i>
+                        <i data-lucide="sun" id="icon-sun" class="w-4 h-4 hidden"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Mobile (4 onglets compacts) -->
+            <nav class="flex md:hidden items-center justify-between gap-1 pb-2.5 overflow-x-auto" aria-label="Navigation mobile">
+                <button onclick="switchTab('reviser')" id="mob-reviser" class="mob-tab-btn flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex flex-col items-center justify-center gap-1 transition">
+                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                    <span>Réviser</span>
+                </button>
+                <button onclick="switchTab('flashcards')" id="mob-flashcards" class="mob-tab-btn flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex flex-col items-center justify-center gap-1 transition">
+                    <i data-lucide="layers" class="w-4 h-4"></i>
+                    <span>Flashcards</span>
+                </button>
+                <button onclick="switchTab('qcm')" id="mob-qcm" class="mob-tab-btn flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex flex-col items-center justify-center gap-1 transition">
+                    <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                    <span>QCM</span>
+                </button>
+                <button onclick="switchTab('progres')" id="mob-progres" class="mob-tab-btn flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex flex-col items-center justify-center gap-1 transition">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                    <span>Progrès</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENU PRINCIPAL -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+        <!-- ===================================================================== -->
+        <!-- ONGLET 1 : RÉVISER (CHECK-LISTS DES 7 SÉANCES & SYNTHÈSES)            -->
+        <!-- ===================================================================== -->
+        <section id="tab-reviser" class="tab-content animate-fade-in space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="space-y-1">
+                    <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md">
+                        <i data-lucide="list-checks" class="w-3.5 h-3.5"></i> Programme officiel L1
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">Check-lists des 7 séances</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                        Coche les notions maîtrisées au fur et à mesure et déplie les fiches de synthèse pour réviser les définitions clés.
+                    </p>
+                </div>
+                <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/70 px-4 py-3 rounded-xl border border-slate-200/80 dark:border-slate-700">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Notions validées</p>
+                        <p class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                            <span id="checklist-done-count">0</span> / <span id="checklist-total-count">58</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center font-bold text-xs text-indigo-700 dark:text-indigo-300 border-2 border-indigo-500" id="checklist-pct-badge">
+                        0%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordéons des 7 séances -->
+            <div id="checklist-container" class="space-y-4">
+                <!-- Généré dynamiquement par JS -->
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- ONGLET 2 : FLASHCARDS (MÉMORISATION ACTIVE 3D)                        -->
+        <!-- ===================================================================== -->
+        <section id="tab-flashcards" class="tab-content hidden animate-fade-in space-y-6">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">Flashcards de mémorisation active</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Clique sur la carte pour révéler la nuance économique, puis évalue ta maîtrise.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="fc-session-filter" onchange="filterFlashcards()" class="text-sm font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">Toutes les séances (1 à 7)</option>
+                            <option value="1">Séance 1 : Cycles & Agrégats</option>
+                            <option value="2">Séance 2 : Croissance & 30 Glorieuses</option>
+                            <option value="3">Séance 3 : Crises économiques</option>
+                            <option value="4">Séance 4 : Financement & Monnaie</option>
+                            <option value="5">Séance 5 : Politiques économiques</option>
+                            <option value="6">Séance 6 : Commerce international</option>
+                            <option value="7">Séance 7 : SMI & Zone Euro</option>
+                        </select>
+                        <button id="fc-review-only-btn" onclick="toggleReviewOnlyFilter()" class="text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-amber-400 transition flex items-center gap-1.5">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500"></i>
+                            <span>À revoir uniquement</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone centrale de la Flashcard 3D -->
+            <div class="max-w-2xl mx-auto space-y-5">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 px-1">
+                    <span id="fc-counter">Carte 1 sur 28</span>
+                    <span id="fc-status-pill" class="px-2.5 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">Non évaluée</span>
+                </div>
+
+                <div class="perspective-1000 w-full h-80 sm:h-96 cursor-pointer" onclick="flipFlashcard()">
+                    <div id="fc-inner" class="preserve-3d relative w-full h-full">
+                        <!-- RECTO -->
+                        <div class="backface-hidden absolute inset-0 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl shadow-md p-6 sm:p-10 flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span id="fc-front-badge" class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-lg">
+                                    Séance 1
+                                </span>
+                                <span class="text-xs text-slate-400 flex items-center gap-1">
+                                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> Cliquer pour retourner
+                                </span>
+                            </div>
+                            <div class="text-center my-auto px-2">
+                                <p class="text-xs uppercase tracking-widest text-slate-400 mb-2 font-semibold">Notion / Distinction</p>
+                                <h3 id="fc-front-text" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-snug">
+                                    Chargement...
+                                </h3>
+                            </div>
+                            <div class="text-center text-xs text-slate-400">
+                                Recto &middot; Question de cours
+                            </div>
+                        </div>
+
+                        <!-- VERSO -->
+                        <div class="backface-hidden rotate-y-180 absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white border-2 border-indigo-500/40 rounded-3xl shadow-lg p-6 sm:p-10 flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/80 border border-emerald-500/30 px-3 py-1 rounded-lg">
+                                    Définition & Nuance clé
+                                </span>
+                                <span class="text-xs text-indigo-300 flex items-center gap-1">
+                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Recto
+                                </span>
+                            </div>
+                            <div class="my-auto space-y-3 overflow-y-auto max-h-56 pr-1">
+                                <p id="fc-back-text" class="text-sm sm:text-base text-slate-100 leading-relaxed font-medium">
+                                    Définition...
+                                </p>
+                                <div id="fc-nuance-box" class="bg-white/10 rounded-xl p-3 text-xs text-indigo-200 border border-white/10">
+                                    <strong class="text-amber-300">Piège examen :</strong> <span id="fc-nuance-text"></span>
+                                </div>
+                            </div>
+                            <div class="text-center text-xs text-indigo-300/70">
+                                Auto-évalue-toi ci-dessous
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contrôles navigation & auto-évaluation -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
+                        <button onclick="prevFlashcard()" class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm flex items-center gap-1.5 transition">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i> Précédente
+                        </button>
+                        <button onclick="nextFlashcard()" class="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm flex items-center gap-1.5 transition">
+                            Suivante <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
+                        <button onclick="rateFlashcard('review')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-semibold text-sm flex items-center justify-center gap-1.5 transition">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> À revoir
+                        </button>
+                        <button onclick="rateFlashcard('mastered')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-1.5 shadow-sm transition">
+                            <i data-lucide="check" class="w-4 h-4"></i> Maîtrisé
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- ONGLET 3 : QCM INTERACTIFS (NIVEAU EXAMEN + ANIMATIONS SVG)           -->
+        <!-- ===================================================================== -->
+        <section id="tab-qcm" class="tab-content hidden animate-fade-in space-y-6">
+
+            <!-- VUE A : MENU DE SÉLECTION DU MODE QCM -->
+            <div id="qcm-menu-view" class="space-y-6">
+                <div class="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                    <div class="relative z-10 max-w-2xl space-y-4">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-indigo-100 backdrop-blur-sm">
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Niveau Examen &middot; Distracteurs complexes & Schémas animés
+                        </span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Entraînement QCM intensif</h2>
+                        <p class="text-indigo-100 text-sm sm:text-base leading-relaxed">
+                            28 questions exigeantes conçues avec des faux-amis économiques, des nuances théoriques précises et des schémas animés interactifs (cycle type, carré magique de Kaldor, flux financiers, courbe en J, étapes de Balassa, dilemme de Triffin).
+                        </p>
+                        <div class="flex flex-wrap gap-3 pt-2">
+                            <button onclick="startQcm('full')" class="bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-5 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                                <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                                Examen complet (28 questions)
+                            </button>
+                            <button onclick="startQcm('quick')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                                <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+                                Session rapide (14 questions)
+                            </button>
+                            <button onclick="startQcm('errors')" id="btn-menu-errors" class="bg-rose-500/30 hover:bg-rose-500/50 text-white border border-rose-300/30 font-semibold px-5 py-3 rounded-xl transition flex items-center gap-2 text-sm backdrop-blur-sm">
+                                <i data-lucide="target" class="w-4 h-4"></i>
+                                Mes erreurs (<span id="menu-error-count">0</span>)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sélection par séance -->
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                        <i data-lucide="folder-open" class="w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                        Ou cibler une séance spécifique (4 questions approfondies par séance) :
+                    </h3>
+                    <div id="qcm-sessions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        <!-- Injecté via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VUE B : QUESTION ACTIVE -->
+            <div id="qcm-active-view" class="hidden space-y-5 max-w-4xl mx-auto">
+                <!-- Barre de progression et score -->
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                        <div class="flex items-center gap-2">
+                            <button onclick="quitQcmToMenu()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg transition">
+                                ← Quitter
+                            </button>
+                            <span id="qcm-mode-label" class="font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950 px-3 py-1 rounded-lg text-xs">Mode</span>
+                            <span class="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm">
+                                Question <strong id="qcm-curr-idx" class="text-slate-900 dark:text-white">1</strong> / <span id="qcm-total-idx">28</span>
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 px-3 py-1 rounded-lg font-bold text-xs sm:text-sm">
+                            <i data-lucide="award" class="w-4 h-4"></i>
+                            <span>Score : <span id="qcm-live-score">0</span></span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div id="qcm-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Carte principale de question -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 sm:p-8 space-y-6">
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span id="qcm-session-tag" class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-1 rounded-md">
+                                Séance 1
+                            </span>
+                            <span id="qcm-difficulty-tag" class="text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200/70 dark:border-amber-800/60">
+                                Niveau Examen
+                            </span>
+                        </div>
+                        <h3 id="qcm-question-text" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
+                            Question...
+                        </h3>
+                    </div>
+
+                    <!-- CONTENEUR D'ANIMATION VISUELLE SVG (affiché uniquement pour les questions illustrées) -->
+                    <div id="qcm-visual-container" class="hidden rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 sm:p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-500"></i>
+                                <span id="qcm-visual-title">Schéma économique animé</span>
+                            </span>
+                            <button onclick="replayVisualAnimation()" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                                <i data-lucide="rotate-cw" class="w-3 h-3"></i> Rejouer l'animation
+                            </button>
+                        </div>
+                        <div id="qcm-visual-svg" class="w-full flex justify-center items-center overflow-hidden">
+                            <!-- SVG animé injecté ici -->
+                        </div>
+                    </div>
+
+                    <!-- Options de réponse -->
+                    <div id="qcm-options-list" class="space-y-3">
+                        <!-- Boutons A, B, C, D -->
+                    </div>
+
+                    <!-- Explication détaillée (Bonne réponse + analyse des pièges) -->
+                    <div id="qcm-feedback-panel" class="hidden rounded-xl p-5 border animate-fade-in space-y-3">
+                        <div id="qcm-feedback-header" class="flex items-center gap-2 font-bold text-base"></div>
+                        <p id="qcm-feedback-main" class="text-sm text-slate-700 dark:text-slate-200 leading-relaxed"></p>
+                        <div class="pt-2 border-t border-slate-200/70 dark:border-slate-700/70 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                            <p class="font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-[11px]">Pourquoi les autres choix sont faux (analyse des pièges) :</p>
+                            <p id="qcm-feedback-traps" class="leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- Bouton Suivant -->
+                    <div class="flex justify-end pt-2">
+                        <button id="qcm-btn-next" onclick="nextQcmQuestion()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                            <span id="qcm-btn-next-label">Question suivante</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VUE C : RÉSULTATS DE LA SESSION QCM -->
+            <div id="qcm-results-view" class="hidden max-w-3xl mx-auto bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 sm:p-8 text-center space-y-5">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <i data-lucide="trophy" class="w-8 h-8"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white">Session terminée !</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Tes résultats ont été enregistrés automatiquement dans ton onglet Progrès.</p>
+                </div>
+                <div class="inline-flex items-baseline gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 px-6 py-4 rounded-2xl">
+                    <span id="qcm-res-score" class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">0</span>
+                    <span class="text-xl font-bold text-slate-400">/ <span id="qcm-res-total">28</span></span>
+                    <span id="qcm-res-pct" class="ml-2 text-sm font-bold px-2.5 py-1 rounded-lg bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200">0%</span>
+                </div>
+                <div class="flex flex-wrap justify-center gap-3 pt-3">
+                    <button id="qcm-res-retry-wrong" onclick="startQcm('errors')" class="hidden bg-rose-600 hover:bg-rose-700 text-white font-semibold px-5 py-3 rounded-xl text-sm flex items-center gap-2 transition">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Travailler mes erreurs
+                    </button>
+                    <button onclick="quitQcmToMenu()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-3 rounded-xl text-sm flex items-center gap-2 transition">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i> Retour aux modes QCM
+                    </button>
+                    <button onclick="switchTab('progres')" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold px-5 py-3 rounded-xl text-sm flex items-center gap-2 transition">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Voir mon tableau de bord
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- ONGLET 4 : PROGRÈS (TABLEAU DE BORD & DIAGNOSTIC PERSONNEL)           -->
+        <!-- ===================================================================== -->
+        <section id="tab-progres" class="tab-content hidden animate-fade-in space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">Tableau de bord & Progrès</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Suivi consolidé de tes check-lists, flashcards et performances aux QCM d'examen.</p>
+                </div>
+                <button onclick="openResetModal()" class="self-start sm:self-auto text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 border border-rose-200 dark:border-rose-900 px-3.5 py-2 rounded-xl transition flex items-center gap-1.5">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Réinitialiser mes données
+                </button>
+            </div>
+
+            <!-- 4 KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between text-indigo-600 dark:text-indigo-400">
+                        <span class="text-xs font-bold uppercase tracking-wider">Taux réussite QCM</span>
+                        <i data-lucide="percent" class="w-4 h-4"></i>
+                    </div>
+                    <p id="stat-qcm-rate" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">0%</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400"><span id="stat-qcm-answered">0</span> réponses enregistrées</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+                        <span class="text-xs font-bold uppercase tracking-wider">Check-lists validées</span>
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    </div>
+                    <p id="stat-checklist-rate" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">0%</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400"><span id="stat-checklist-count">0</span> / 58 compétences</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between text-amber-600 dark:text-amber-400">
+                        <span class="text-xs font-bold uppercase tracking-wider">Flashcards maîtrisées</span>
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                    </div>
+                    <p id="stat-fc-mastered" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">0 / 28</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400"><span id="stat-fc-review">0</span> marquées « à revoir »</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between text-rose-600 dark:text-rose-400">
+                        <span class="text-xs font-bold uppercase tracking-wider">Erreurs à corriger</span>
+                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    </div>
+                    <p id="stat-errors-count" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">0</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Questions QCM en attente</p>
+                </div>
+            </div>
+
+            <!-- Graphique détaillé par séance + Points faibles -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Maîtrise par séance (2/3 largeur) -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Maîtrise détaillée par séance</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Comparaison entre ton avancement check-list (vert) et ton taux de réussite au QCM (indigo).</p>
+                    </div>
+                    <div id="progres-sessions-bars" class="space-y-4">
+                        <!-- Barres injectées via JS -->
+                    </div>
+                </div>
+
+                <!-- Points faibles à retravailler (1/3 largeur) -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Points faibles</h3>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400">Priorité examen</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Questions que tu as ratées récemment et qu'il faut retravailler :</p>
+                        <div id="weak-points-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                            <!-- Liste dynamique -->
+                        </div>
+                    </div>
+
+                    <button id="btn-progres-train-weak" onclick="startWeakPointsQcm()" class="w-full bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-sm">
+                        <i data-lucide="play-circle" class="w-4 h-4"></i>
+                        <span>Lancer un QCM sur ces erreurs</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALE DE CONFIRMATION DE RÉINITIALISATION (sans alert/confirm natif) -->
+    <div id="reset-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4 animate-fade-in">
+            <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Réinitialiser toute ta progression ?</h3>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                Cette action effacera tes cases cochées dans les 7 check-lists, le statut de tes flashcards ainsi que tes statistiques de QCM.
+            </p>
+            <div class="flex justify-end gap-2.5 pt-2">
+                <button onclick="closeResetModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
+                    Annuler
+                </button>
+                <button onclick="confirmResetAll()" class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white transition">
+                    Oui, tout effacer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIED DE PAGE -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-5 mt-8">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+            <span>ÉcoMaster L1 &middot; Projet personnel de révision d'analyse économique</span>
+            <span>Sauvegarde automatique locale activée</span>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================================================
+        // 1. DONNÉES COMPLÈTES DES 7 SÉANCES & CHECK-LISTS EXACTES
+        // =========================================================================
+        const SESSIONS_DATA = [
+            {
+                id: 1,
+                title: "Séance 1 : Introduction, PIB, Cycles & Révolutions industrielles",
+                synthesis: "La micro-économie étudie les choix individuels des agents (ménages, entreprises) sur des marchés spécifiques, tandis que la macro-économie analyse les grands agrégats (PIB, chômage, inflation). La croissance se mesure par le taux de variation du PIB réel (en volume, à prix constants). Le cycle économique type comprend 4 phases (expansion, crise/retournement, récession/dépression, reprise) et se décline en 4 durées (Kitchin 3-5 ans, Juglar 7-11 ans, Kuznets 15-25 ans, Kondratiev 45-70 ans).",
+                items: [
+                    "Je sais faire la différence entre la micro- et la macro-économie",
+                    "Je sais à partir de quel agrégat des comptes nationaux est calculée la croissance économique",
+                    "Je connais les principales composantes du PIB",
+                    "Je sais faire la différence entre la croissance et le développement économiques",
+                    "Je connais au moins 3 facteurs de croissance économique",
+                    "Je sais dessiner un « cycle type » (en suivant au moins 4 phases du cycle)",
+                    "Je connais les 4 catégories de cycles économiques et je sais expliquer leurs différences",
+                    "Je sais faire la différence entre première et la seconde révolutions industrielles"
+                ]
+            },
+            {
+                id: 2,
+                title: "Séance 2 : Inflation, OST & Trente Glorieuses",
+                synthesis: "L'inflation est une hausse durable et auto-entretenue du niveau général des prix ; l'hyperinflation correspond à un dérapage incontrôlé (> 50 %/mois) détruisant la confiance dans la monnaie. La croissance extensive augmente la quantité de facteurs (travail, capital), alors que la croissance intensive repose sur les gains de productivité (progrès technique, OST via Taylorisme et Fordisme). Les Trente Glorieuses (1945-1973) reposent sur le baby-boom, le rattrapage, l'énergie bon marché et le fordisme, mais s'essoufflent face à la crise du travail, aux limites écologiques et aux chocs pétroliers.",
+                items: [
+                    "Je sais faire la différence entre l'inflation et l'hyperinflation",
+                    "Je sais faire la différence entre la croissance intensive et extensive",
+                    "Je connais au moins 2 formes de l'OST (Organisation Scientifique du Travail)",
+                    "Je peux citer au moins trois causes principales de la croissance des Trente Glorieuses",
+                    "Je connais au moins 2 limites de la croissance des Trente Glorieuses"
+                ]
+            },
+            {
+                id: 3,
+                title: "Séance 3 : Les Crises Économiques & Financières",
+                synthesis: "Une crise économique est un retournement brutal de la conjoncture. Elle peut provenir d'un choc exogène (extérieur au système) ou endogène (interne, ex. bulle spéculative), et être symétrique (touche toute une zone) ou asymétrique (localisée). La Grande Dépression (1873-1896) est une déflation lente sans effondrement productif, tandis que la Grande Crise (1929) est un krach suivi d'une chute massive du PIB et de l'emploi. La crise des subprimes (2007) naît de crédits immobiliers risqués titrisés et diffusés mondialement. Enfin, la désinflation est un ralentissement de l'inflation (prix montent moins vite), alors que la stagflation combine stagnation économique et forte inflation.",
+                items: [
+                    "Je sais faire la différence entre les chocs exogènes et endogènes",
+                    "Je connais les 4 types de crises",
+                    "Je connais la définition d'une crise économique",
+                    "Je sais faire la différence entre le choc symétrique et le choc asymétrique",
+                    "Je connais les symptômes d'une crise classique",
+                    "Je connais les symptômes d'une crise de productivité et de rentabilité",
+                    "Je connais les 4 phases du mécanisme de la crise",
+                    "Je sais faire la différence entre la Grande Dépression et la Grande Crise",
+                    "Je peux expliquer les origines de la crise des « subprimes »",
+                    "Je sais faire la différence entre l'inflation, la désinflation et la stagflation"
+                ]
+            },
+            {
+                id: 4,
+                title: "Séance 4 : Financement de l'Économie, Banques & Marchés Financiers",
+                synthesis: "L'économie se finance par l'autofinancement (finance interne), le crédit bancaire (finance externe intermédiée) et les marchés financiers (finance externe directe). Le modèle anglo-saxon/français distinguait historiquement banques de dépôt et banques d'affaires, là où le modèle allemand privilégie la banque universelle. La Banque Centrale pilote la politique monétaire, émet la monnaie fiduciaire (pièces/billets) et agit comme prêteur en dernier ressort. Le SEBC regroupe la BCE et toutes les banques centrales de l'UE. En volume décroissant : Marché des changes (Forex) > Marché monétaire > Marché obligataire > Marché actions (où figure le CAC 40).",
+                items: [
+                    "Je peux citer au moins 3 sources de financement de l'économie",
+                    "Je connais la différence entre les banques d'affaires et les banques de dépôt",
+                    "Je connais la différence entre le modèle bancaire britannique/français et le modèle allemand",
+                    "Je sais faire la différence entre la finance interne et la finance externe",
+                    "Je sais faire la différence entre la finance directe et celle intermédiée",
+                    "Je connais les fonctions de la Banque Centrale",
+                    "Je connais la différence entre la BCE et le SEBC",
+                    "Je sais faire la différence entre la monnaie fiduciaire et la monnaie scripturale",
+                    "Je sais classer les 4 principaux marchés financiers par ordre décroissant des volumes des transactions",
+                    "Je connais la définition du CAC 40"
+                ]
+            },
+            {
+                id: 5,
+                title: "Séance 5 : Les Politiques Économiques",
+                synthesis: "L'économie politique est la science théorique, la politique économique est l'action concrète de l'État. Le mercantilisme (XVIe-XVIIIe s.) prend 3 formes : bullionisme espagnol, colbertisme français, commercialisme anglais. Le carré magique de N. Kaldor illustre 4 objectifs conjoncturels : croissance, plein emploi, stabilité des prix, équilibre extérieur. La politique budgétaire (État) et monétaire (Banque Centrale) peuvent être de relance (limiter par la contrainte extérieure et l'inflation) ou de rigueur. Les politiques d'offre visent la compétitivité des entreprises mais ont des effets lents et un coût budgétaire immédiat.",
+                items: [
+                    "Je sais faire la différence entre la politique économique et l'économie politique",
+                    "Je connais les différentes formes du mercantilisme",
+                    "Je sais faire la différence entre le protectionnisme et le libéralisme",
+                    "Je sais faire la différence entre la conjoncture et la structure économiques",
+                    "Je sais définir le « carré magique » de N. Kaldor",
+                    "Je connais les principaux types de politique conjoncturelle",
+                    "Je sais faire la différence entre la politique monétaire et la politique budgétaire",
+                    "Je sais faire la différence entre la politique de relance et la politique de rigueur",
+                    "Je connais les limites de la politique de demande",
+                    "Je connais les limites de la politique d'offre"
+                ]
+            },
+            {
+                id: 6,
+                title: "Séance 6 : Commerce International & Mondialisation",
+                synthesis: "L'internationalisation ouvre les échanges nationaux, la mondialisation étend les marchés à la planète, la globalisation unifie les marchés (surtout financiers) sans frontières. Les 3 théories pro-libre-échange sont les avantages absolus (Smith), comparatifs (Ricardo) et dotations factorielles (HOS). La balance commerciale mesure les biens uniquement ; la balance courante ajoute services, revenus et transferts. Le commerce intra-branche échange des produits similaires (ex. voitures), contrairement à l'inter-branche. Bela Balassa définit 5 étapes d'intégration régionale : Zone de libre-échange, Union douanière, Marché commun, Union économique et monétaire, Intégration totale.",
+                items: [
+                    "Je sais faire la différence entre la mondialisation, globalisation et internationalisation",
+                    "Je connais les 3 théories principales pro-libre-échange",
+                    "Je connais les principales barrières au libre-échange",
+                    "Je connais les fonctions de l'OMC",
+                    "Je sais faire la différence entre la balance commerciale et la balance des transactions courantes",
+                    "Je connais les principaux canaux de contribution du commerce international dans la croissance économique",
+                    "Je sais faire la différence entre le commerce intra- et inter-branche",
+                    "Je sais faire la différence entre la DIT « traditionnelle » et « nouvelle »",
+                    "Je sais définir la « Triade » du commerce international",
+                    "Je connais la typologie des FMN",
+                    "Je connais les principales étapes de la régionalisation des échanges"
+                ]
+            },
+            {
+                id: 7,
+                title: "Séance 7 : Système Monétaire International (SMI) & Euro",
+                synthesis: "Dans le Gold Standard, toutes les monnaies sont convertibles en or ; dans le Gold Exchange Standard (Bretton Woods, 1944), seul le dollar l'est. Le Currency Principle exige une stricte couverture-or des billets émis, contrairement au Banking Principle plus souple. À Bretton Woods, le plan White (dollar pivot, FMI + BIRD) l'emporte sur le plan Keynes (monnaie neutre Bancor). Dès 1958, le dilemme de Triffin fragilise le dollar (déficits US > réserves d'or). Après 1971-1973, les changes flottants s'imposent. En Europe, le SME (1979 : ECU, marges ±2,25 %, FECOM) prépare la naissance de l'euro.",
+                items: [
+                    "Je sais faire la différence entre le système basé sur la convertibilité-or (Gold Standard) et le système d'étalon de change-or (Gold Exchange Standard)",
+                    "Je sais faire la différence entre Currency Principle et Banking Principle",
+                    "Dans le cadre des accords de Bretton Woods, je connais les points communs des plans britannique vs américain (Keynes vs White)",
+                    "Dans le cadre des accords de Bretton Woods, je connais les points divergents des plans britannique vs américain (Keynes vs White)",
+                    "Je connais le rôle des deux institutions internationales issues des accords de Bretton Woods",
+                    "Je connais les limites du SMI issu des accords de Bretton Woods",
+                    "Je sais pourquoi depuis 1958, le dollar n'exerce plus le même pouvoir d'attraction",
+                    "Je connais les avantages et les inconvenients du régime des changes flottants",
+                    "Je sais expliquer le principe des dévaluations compétitives",
+                    "Je connais les piliers du SME",
+                    "Je connais les avantages et les inconvénients de l'euro"
+                ]
+            }
+        ];
+
+        // =========================================================================
+        // 2. FLASHCARDS (28 CARTES COUVRANT TOUTES LES CHECK-LISTS)
+        // =========================================================================
+        const FLASHCARDS_DATA = [
+            { id: 1, session: 1, front: "PIB nominal vs PIB réel (en volume)", back: "Le PIB nominal est évalué aux prix courants (il intègre donc l'inflation), tandis que le PIB réel est calculé à prix constants (il neutralise l'effet prix pour mesurer la variation réelle des quantités produites).", nuance: "La croissance économique se calcule toujours à partir du PIB réel (en volume), jamais du PIB nominal." },
+            { id: 2, session: 1, front: "Les 4 catégories de cycles économiques", back: "1) Kitchin (3-5 ans : stocks) ; 2) Juglar (7-11 ans : cycle des affaires et investissement) ; 3) Kuznets (15-25 ans : bâtiment et infrastructures) ; 4) Kondratiev (45-70 ans : grappes d'innovations majeures).", nuance: "Ne confonds pas Juglar (cycle majeur d'affaires ~8-10 ans) et Kondratiev (cycle long d'un demi-siècle)." },
+            { id: 3, session: 1, front: "Croissance économique vs Développement", back: "La croissance est un phénomène quantitatif (augmentation durable du PIB réel), alors que le développement est un processus qualitatif englobant les transformations sociales, éducatives, sanitaires et institutionnelles (mesuré par l'IDH).", nuance: "Il peut y avoir croissance sans développement (ex. pays rentier pétrolier très inégalitaire)." },
+            { id: 4, session: 1, front: "1ère Révolution industrielle vs 2nde Révolution industrielle", back: "1ère (fin XVIIIe, Royaume-Uni) : charbon, machine à vapeur, textile, métallurgie. 2nde (fin XIXe, États-Unis/Allemagne) : électricité, pétrole, moteur à explosion, chimie, automobile et OST.", nuance: "Le travail à la chaîne (fordisme) appartient à la 2nde révolution industrielle, pas à la 1ère." },
+            { id: 5, session: 2, front: "Inflation vs Hyperinflation", back: "L'inflation est une hausse durable, générale et auto-entretenue des prix. L'hyperinflation est un emballement extrême (> +50 % par mois selon P. Cagan) où la monnaie perd toute valeur et est rejetée par les agents.", nuance: "En hyperinflation, les agents fuient la monnaie nationale (dollarisation ou retour au troc)." },
+            { id: 6, session: 2, front: "Croissance extensive vs Croissance intensive", back: "La croissance extensive résulte de l'augmentation quantitative des facteurs de production (plus de travailleurs, plus de machines). La croissance intensive provient des gains de productivité (progrès technique, meilleure organisation).", nuance: "Les Trente Glorieuses combinent les deux, avec un rôle moteur croissant de la composante intensive." },
+            { id: 7, session: 2, front: "Les deux formes de l'OST (Taylorisme et Fordisme)", back: "Taylorisme : double division du travail (verticale : conception/exécution ; horizontale : parcellisation des tâches) et chronométrage. Fordisme : ajout du convoyeur (chaîne), standardisation des produits et hausse des salaires (5$/jour).", nuance: "Le fordisme lie production de masse et consommation de masse grâce à la hausse du pouvoir d'achat ouvrier." },
+            { id: 8, session: 2, front: "Limites de la croissance des Trente Glorieuses", back: "Essoufflement des gains de productivité (crise sociale du tayloro-fordisme), saturation de la demande en biens d'équipement, montée des externalités environnementales (rapport Meadows 1972) et chocs pétroliers (1973, 1979).", nuance: "La crise du modèle productif débute dès la fin des années 1960, avant même le choc pétrolier de 1973." },
+            { id: 9, session: 3, front: "Choc exogène vs Choc endogène", back: "Un choc exogène provient de l'extérieur du système économique (guerre, pandémie, choc pétrolier, catastrophe naturelle). Un choc endogène est généré par le fonctionnement interne de l'économie (bulle financière, surinvestissement).", nuance: "La crise des subprimes est un choc endogène (excès d'endettement interne au système financier)." },
+            { id: 10, session: 3, front: "Choc symétrique vs Choc asymétrique", back: "Un choc symétrique frappe simultanément et avec une intensité comparable tous les pays/secteurs d'une zone. Un choc asymétrique n'affecte qu'un pays ou une branche particulière.", nuance: "En zone euro, un choc asymétrique est difficile à gérer car la politique monétaire de la BCE est unique." },
+            { id: 11, session: 3, front: "Grande Dépression (1873-1896) vs Grande Crise (1929)", back: "La Grande Dépression (1873-1896) est une longue période de baisse des prix et des profits (déflation) sans effondrement de la production. La Grande Crise de 1929 est un krach boursier suivi d'un effondrement brutal du PIB et d'un chômage de masse.", nuance: "Attention au faux-ami : en histoire économique, « Grande Dépression » désigne souvent 1873-1896 (ou les années 1930 aux USA), alors que « Grande Crise » désigne 1929." },
+            { id: 12, session: 3, front: "Inflation, Désinflation, Déflation et Stagflation", back: "Inflation : hausse des prix. Désinflation : ralentissement de la hausse des prix (les prix montent encore, mais moins vite). Déflation : baisse du niveau général des prix. Stagflation : stagnation économique + forte inflation.", nuance: "Ne jamais confondre désinflation (inflation positive qui baisse, ex: de 5% à 2%) et déflation (inflation négative, ex: -1%)." },
+            { id: 13, session: 4, front: "Finance interne vs Finance externe (directe vs intermédiée)", back: "Finance interne : autofinancement sur fonds propres. Finance externe : appel à des capitaux extérieurs, soit via les banques (finance intermédiée), soit directement sur les marchés financiers (finance directe / désintermédiée).", nuance: "L'émission d'actions ou d'obligations en Bourse relève de la finance externe directe." },
+            { id: 14, session: 4, front: "Modèle bancaire anglo-saxon/français vs Modèle allemand", back: "Le modèle anglo-saxon et français (loi de 1945) séparait strictement banques de dépôt (épargne et crédit courant) et banques d'affaires (ingénierie financière). Le modèle allemand repose sur la banque universelle (Hausbank) intégrée au capital industriel.", nuance: "En France, la loi bancaire de 1984 a finalement consacré le modèle de banque universelle." },
+            { id: 15, session: 4, front: "BCE vs SEBC", back: "La BCE (Banque Centrale Européenne) dirige la politique monétaire de la zone euro (avec les BCN de la zone euro = Eurosystème). Le SEBC (Système Européen de Banques Centrales) regroupe la BCE et les banques centrales de TOUS les pays de l'UE (y compris hors zone euro).", nuance: "Eurosystème = BCE + BCN zone euro. SEBC = BCE + toutes les BCN de l'Union européenne." },
+            { id: 16, session: 4, front: "Classement des 4 marchés financiers par volume décroissant", back: "1) Marché des changes (Forex) ; 2) Marché monétaire (interbancaire) ; 3) Marché obligataire (taux/dettes) ; 4) Marché actions.", nuance: "Le marché actions est le plus médiatisé mais le plus petit en volume quotidien comparé au Forex." },
+            { id: 17, session: 5, front: "Les 3 formes historiques du Mercantilisme", back: "1) Bullionisme espagnol (accumulation directe d'or et d'argent) ; 2) Colbertisme français (industrialisation, manufactures royales et exportation) ; 3) Commercialisme britannique (puissance maritime et monopole du commerce).", nuance: "Tous partagent l'idée que la richesse d'un État réside dans l'accumulation de métaux précieux via un excédent commercial." },
+            { id: 18, session: 5, front: "Le « Carré Magique » de Nicholas Kaldor", back: "Représentation graphique de 4 objectifs de politique conjoncturelle : croissance du PIB (élevée), plein emploi (taux de chômage faible), stabilité des prix (inflation faible) et équilibre extérieur (balance courante).", nuance: "Il est dit « magique » car il est quasi impossible d'atteindre simultanément les 4 sommets optimaux." },
+            { id: 19, session: 5, front: "Limites de la politique de demande vs Politique d'offre", back: "Politique de demande : risque inflationniste, creusement des déficits et contrainte extérieure (fuite vers les importations). Politique d'offre : effets lents à long terme, coût budgétaire immédiat et risque d'accroissement des inégalités sans garantie d'investissement.", nuance: "En économie ouverte, relancer la demande intérieure profite souvent aux producteurs étrangers." },
+            { id: 20, session: 6, front: "Internationalisation, Mondialisation et Globalisation", back: "Internationalisation : essor des flux commerciaux entre nations distinctes. Mondialisation : extension de l'espace stratégique des firmes et marchés à l'échelle planétaire. Globalisation : marché mondial unifié et instantané où les frontières s'effacent (finance 3D).", nuance: "La globalisation financière repose sur les 3D : Désintermédiation, Décloisonnement, Déréglementation." },
+            { id: 21, session: 6, front: "Les 3 théories pro-libre-échange (Smith, Ricardo, HOS)", back: "Smith : avantages absolus (productivité supérieure dans un bien). Ricardo : avantages comparatifs (spécialisation là où le désavantage relatif est le plus faible). HOS : dotations factorielles (spécialisation selon l'abondance relative en travail ou capital).", nuance: "Ricardo démontre qu'un pays moins productif partout gagne quand même à échanger." },
+            { id: 22, session: 6, front: "Balance commerciale vs Balance des transactions courantes", back: "La balance commerciale mesure uniquement les exportations moins les importations de biens (marchandises). La balance des transactions courantes inclut en plus les services, les revenus primaires (salaires, dividendes) et les transferts courants.", nuance: "Un pays peut avoir une balance commerciale déficitaire mais une balance courante excédentaire grâce aux services (ex. tourisme, finance)." },
+            { id: 23, session: 6, front: "Les étapes de l'intégration régionale (Bela Balassa)", back: "1) Zone de libre-échange ; 2) Union douanière (+ tarif extérieur commun) ; 3) Marché commun (+ libre circulation capitaux/travailleurs) ; 4) Union économique et monétaire (+ monnaie unique) ; 5) Intégration totale.", nuance: "La différence entre zone de libre-échange (ex. ALENA) et union douanière est le Tarif Extérieur Commun (TEC)." },
+            { id: 24, session: 7, front: "Gold Standard vs Gold Exchange Standard", back: "Gold Standard : chaque monnaie nationale est directement convertible en or et garantie par l'encaisse métallique. Gold Exchange Standard (Bretton Woods) : seul le dollar est convertible en or (35$/once), les autres devises sont convertibles en dollars à parité fixe.", nuance: "Le Gold Exchange Standard économise l'or mais crée une dépendance mondiale envers la monnaie clé (le dollar)." },
+            { id: 25, session: 7, front: "Currency Principle vs Banking Principle", back: "Currency Principle (Ricardo) : l'émission de billets doit être strictement gagée sur le stock d'or pour prévenir l'inflation. Banking Principle (Tooke) : l'émission doit s'adapter souplement aux besoins réels de crédit de l'activité économique.", nuance: "Le Bank Charter Act anglais de 1844 consacre la victoire du Currency Principle." },
+            { id: 26, session: 7, front: "Plan Keynes vs Plan White (Bretton Woods, 1944)", back: "Point commun : refus des dévaluations compétitives et recherche de stabilité des changes. Divergences : Keynes voulait une monnaie supranationale neutre (le Bancor) et pénaliser les pays excédentaires ; White a imposé le dollar comme pivot et fait peser l'ajustement sur les pays déficitaires.", nuance: "C'est le plan américain (Harry White) qui a été adopté en juillet 1944." },
+            { id: 27, session: 7, front: "Dilemme de Triffin et perte d'attractivité du dollar (1958)", back: "Pour fournir des liquidités au commerce mondial, les USA doivent avoir un déficit extérieur. Mais à partir de 1958-1960, les dollars détenus hors des USA dépassent le stock d'or américain, minant la confiance dans sa convertibilité (menant à la suspension de 1971).", nuance: "Soit les USA réduisent leur déficit et asphyxient le commerce mondial, soit ils le creusent et détruisent la crédibilité du dollar." },
+            { id: 28, session: 7, front: "Les 3 piliers du Système Monétaire Européen (SME, 1979)", back: "1) L'ECU (unité de compte panier des monnaies européennes) ; 2) Un mécanisme de change fixe mais ajustable avec des marges de fluctuation (±2,25 % autour des cours pivots) ; 3) Le FECOM (fonds européen de coopération monétaire pour soutenir les devises).", nuance: "Les marges ont dû être élargies à ±15 % lors des crises spéculatives de 1992-1993 avant le passage à l'euro." }
+        ];
+
+        // =========================================================================
+        // 3. BANQUE DE 28 QUESTIONS QCM COMPLEXES (4 PAR SÉANCE + VISUELS SVG)
+        // =========================================================================
+        const QCM_QUESTIONS = [
+            // --- SÉANCE 1 ---
+            {
+                id: 101,
+                session: 1,
+                question: "Lorsqu'un pays enregistre sur une année une hausse de 4,5 % de son PIB nominal alors que le déflateur du PIB (inflation) s'élève à 5,2 %, quelle conclusion économique rigoureuse s'impose ?",
+                options: [
+                    "Le pays a connu une croissance économique réelle de 4,5 %, tirée par la consommation.",
+                    "Le pays est en réalité en récession économique (croissance réelle d'environ −0,7 %), car la hausse des prix masque une baisse des volumes produits.",
+                    "Le développement économique du pays a progressé de 9,7 % grâce à l'effet cumulé des prix et des volumes.",
+                    "Le PIB en volume a augmenté de 0,7 %, ce qui correspond à une phase de reprise dans un cycle de Kitchin."
+                ],
+                correct: 1,
+                explanation: "La croissance économique se mesure exclusivement à partir du PIB réel (en volume). Le taux de croissance réel est approximativement égal au taux de croissance nominal moins l'inflation (4,5 % − 5,2 % = −0,7 %) : la production en volume a donc reculé.",
+                traps: "Le piège classique consiste à confondre PIB nominal (qui gonfle artificiellement avec l'inflation) et PIB réel. De plus, le développement est un concept qualitatif non réductible au PIB."
+            },
+            {
+                id: 102,
+                session: 1,
+                visualType: "cycle",
+                visualTitle: "Animation du cycle économique type et de ses 4 phases",
+                question: "Sur le schéma animé du cycle économique type ci-dessus, quelle caractéristique distingue précisément le point d'inflexion supérieur (phase 2 : crise/retournement) de la phase suivante (phase 3 : récession/dépression) ?",
+                options: [
+                    "Le retournement correspond au point de rupture où la demande sature et les anticipations basculent, tandis que la récession/dépression désigne le processus cumulatif de contraction de la production et de montée du chômage.",
+                    "Le retournement correspond au creux cyclique où les stocks sont épuisés, tandis que la récession désigne l'accélération de l'inflation par la demande.",
+                    "Le retournement ne se produit que dans les cycles de Kondratiev (50 ans), tandis que la récession est propre aux cycles de Kitchin (3 ans).",
+                    "Le retournement traduit une baisse du PIB en volume, alors que la récession se définit uniquement par une baisse du niveau général des prix."
+                ],
+                correct: 0,
+                explanation: "Le cycle type s'articule en 4 séquences : 1) Expansion (croissance accélérée), 2) Crise/Retournement (point de bascule brutal de la conjoncture), 3) Récession (ralentissement) puis Dépression (contraction durable de l'activité), 4) Reprise (redémarrage des investissements).",
+                traps: "Attention à ne pas confondre le moment du retournement (la crise au sens strict) avec la durée de la baisse d'activité qui suit (récession/dépression), ni à limiter la récession à une simple baisse des prix (déflation)."
+            },
+            {
+                id: 103,
+                session: 1,
+                question: "Comment distingue-t-on rigoureusement la croissance économique du développement économique dans l'analyse contemporaine ?",
+                options: [
+                    "La croissance est un processus structurel et qualitatif mesuré par l'IDH, alors que le développement est une mesure purement comptable de la richesse créée.",
+                    "La croissance désigne l'accroissement quantitatif soutenu de la production (PIB réel), tandis que le développement englobe les transformations qualitatives (éducatives, sanitaires, institutionnelles) permettant d'élever le bien-être de la population.",
+                    "La croissance ne concerne que les pays industrialisés de la Triade, tandis que le développement s'applique exclusivement aux économies émergentes.",
+                    "Ces deux notions sont strictement équivalentes dès lors que le taux de croissance annuel dépasse 3 %."
+                ],
+                correct: 1,
+                explanation: "Selon François Perroux, le développement est « la combinaison des changements mentaux et sociaux d'une population qui la rendent apte à faire croître cumulativement et durablement son produit réel global ». La croissance est donc quantitative, le développement est qualitatif.",
+                traps: "L'option A inverse exactement les deux définitions. L'option D est fausse car une croissance forte peut s'accompagner d'un sous-développement social (croissance sans développement)."
+            },
+            {
+                id: 104,
+                session: 1,
+                question: "Parmi les propositions suivantes, laquelle associe correctement la première et la seconde révolutions industrielles à leurs systèmes techniques et énergétiques respectifs ?",
+                options: [
+                    "1ère révolution : pétrole, électricité et taylorisme ; 2nde révolution : machine à vapeur, charbon et industrie textile.",
+                    "1ère révolution : charbon, machine à vapeur et métallurgie/textile ; 2nde révolution : électricité, pétrole, chimie, automobile et production de masse.",
+                    "1ère révolution : énergie nucléaire et informatique ; 2nde révolution : hydraulique et manufacture artisanale.",
+                    "1ère révolution : moteur à explosion et sidérurgie fine ; 2nde révolution : machine à vapeur et chemins de fer."
+                ],
+                correct: 1,
+                explanation: "La 1ère révolution industrielle (fin XVIIIe s.) repose sur la vapeur et le charbon. La 2nde révolution industrielle (fin XIXe s.) introduit de nouvelles sources d'énergie (électricité, pétrole) et de nouvelles industries (automobile, chimie) organisées selon l'OST.",
+                traps: "Les options A et D inversent les innovations énergétiques et sectorielles entre la fin du XVIIIe siècle et la fin du XIXe siècle."
+            },
+
+            // --- SÉANCE 2 ---
+            {
+                id: 201,
+                session: 2,
+                question: "Quelle différence fondamentale sépare la logique de la croissance « extensive » de celle de la croissance « intensive » ?",
+                options: [
+                    "La croissance extensive repose sur la hausse de la productivité globale des facteurs (PGF), tandis que la croissance intensive résulte de l'embauche massive de main-d'œuvre.",
+                    "La croissance extensive provient de l'augmentation quantitative des facteurs de production utilisés (travail et capital), alors que la croissance intensive découle d'une meilleure efficacité productive grâce au progrès technique et à l'organisation.",
+                    "La croissance extensive ne se produit qu'en période d'hyperinflation, contrairement à la croissance intensive qui nécessite une déflation.",
+                    "La croissance extensive est exclusivement tirée par les exportations, tandis que la croissance intensive repose sur la demande intérieure."
+                ],
+                correct: 1,
+                explanation: "Croissance extensive = plus de facteurs (on multiplie les usines et les heures travaillées). Croissance intensive = facteurs plus efficaces (innovation, capital humain, gains de productivité).",
+                traps: "L'option A inverse les définitions. Les options C et D introduisent de faux critères monétaires ou commerciaux."
+            },
+            {
+                id: 202,
+                session: 2,
+                question: "Dans l'Organisation Scientifique du Travail (OST), quel apport spécifique distingue le fordisme du taylorisme initial ?",
+                options: [
+                    "Taylor a inventé le travail à la chaîne mécanisé, tandis que Ford a supprimé la parcellisation des tâches pour favoriser l'autonomie ouvrière.",
+                    "Ford conserve la double division du travail de Taylor mais y ajoute le convoyeur (déplacement mécanique des pièces), la standardisation extrême des produits et le « Five Dollars Day » pour créer une consommation de masse.",
+                    "Taylor prônait la hausse des salaires pour stimuler la demande, tandis que Ford militait pour la baisse des salaires nominaux.",
+                    "Le fordisme repose sur la production en petites séries sur-mesure (toyotisme), à l'inverse du taylorisme."
+                ],
+                correct: 1,
+                explanation: "Le taylorisme repose sur la division verticale (ingénieurs/ouvriers) et horizontale (gestes chronométrés). Le fordisme y ajoute la chaîne d'assemblage mobile, la standardisation des biens et le partage des gains de productivité via les salaires.",
+                traps: "L'option A attribue à tort la chaîne mobile à Taylor. L'option D confond le fordisme avec le toyotisme (production flexible à flux tendus)."
+            },
+            {
+                id: 203,
+                session: 2,
+                question: "Parmi les affirmations suivantes sur l'hyperinflation (telle que l'Allemagne en 1923), laquelle est économiquement exacte ?",
+                options: [
+                    "L'hyperinflation désigne toute hausse des prix supérieure à 5 % par an pendant trois années consécutives.",
+                    "L'hyperinflation correspond à un dérapage mensuel des prix supérieur à 50 %, alimenté par la création monétaire excessive et entraînant une fuite devant la monnaie qui perd sa fonction de réserve de valeur.",
+                    "L'hyperinflation permet d'augmenter durablement le pouvoir d'achat des ménages grâce à l'indexation automatique des salaires.",
+                    "L'hyperinflation est provoquée par une surproduction agricole massive et une baisse de la masse monétaire."
+                ],
+                correct: 1,
+                explanation: "Définie quantitativement par P. Cagan (> 50 % de hausse mensuelle), l'hyperinflation détruit les fonctions monétaires (réserve de valeur et unité de compte) suite à une monétisation incontrôlée des déficits publics.",
+                traps: "5 % par an relève d'une inflation ouverte modérée, pas d'une hyperinflation. L'hyperinflation ruine les épargnants et détruit le pouvoir d'achat."
+            },
+            {
+                id: 204,
+                session: 2,
+                question: "Quelle proposition identifie correctement à la fois un moteur et une limite structurelle de la croissance des Trente Glorieuses (1945-1973) ?",
+                options: [
+                    "Moteur : la baisse drastique des dépenses publiques ; Limite : la pénurie mondiale de main-d'œuvre due à une chute de la natalité dès 1946.",
+                    "Moteur : le cercle vertueux fordiste (gains de productivité + hausse des salaires + consommation de masse) et l'énergie bon marché ; Limite : l'essoufflement social/productif du travail à la chaîne et les atteintes environnementales.",
+                    "Moteur : l'adoption des taux de change flottants dès 1945 ; Limite : l'excédent commercial chronique de tous les pays européens.",
+                    "Moteur : la désindustrialisation rapide des économies occidentales ; Limite : le maintien du Gold Standard jusqu'en 1980."
+                ],
+                correct: 1,
+                explanation: "Les Trente Glorieuses sont portées par le baby-boom, la reconstruction, le modèle fordiste et le pétrole peu cher. Elles atteignent leurs limites dès la fin des années 1960 avec le rejet du travail répétitif, le ralentissement des gains de productivité et la prise de conscience écologique (rapport Meadows).",
+                traps: "Les autres options contiennent des erreurs historiques majeures (il y a eu un baby-boom et non une chute de natalité ; Bretton Woods imposait des changes fixes et non flottants)."
+            },
+
+            // --- SÉANCE 3 ---
+            {
+                id: 301,
+                session: 3,
+                question: "Quelle distinction précise oppose les phénomènes de « désinflation », de « déflation » et de « stagflation » ?",
+                options: [
+                    "La désinflation est une baisse générale des prix, la déflation est un ralentissement de la hausse des prix, et la stagflation est une croissance forte sans inflation.",
+                    "La désinflation désigne le ralentissement du rythme de l'inflation (les prix augmentent moins vite), la déflation est une baisse durable du niveau général des prix, et la stagflation associe stagnation économique et forte inflation.",
+                    "La désinflation et la déflation sont deux synonymes désignant la baisse du taux de chômage, tandis que la stagflation désigne une crise boursière.",
+                    "La stagflation ne peut survenir qu'en période de déflation prolongée."
+                ],
+                correct: 1,
+                explanation: "En désinflation, le taux d'inflation passe par exemple de 6 % à 2 % (les prix montent toujours, mais plus lentement). En déflation, le taux d'inflation devient négatif (−1 %). La stagflation cumule chômage/stagnation et inflation élevée.",
+                traps: "L'option A inverse désinflation et déflation, et définit à l'envers la stagflation."
+            },
+            {
+                id: 302,
+                session: 3,
+                question: "En quoi la crise des « subprimes » de 2007-2008 illustre-t-elle un choc endogène transformé en crise financière systémique ?",
+                options: [
+                    "Elle a été déclenchée par une guerre au Moyen-Orient qui a quadruplé le prix du baril de pétrole.",
+                    "Elle résulte de mécanismes internes à la finance : octroi de prêts hypothécaires risqués à taux variables aux ménages américains insolvables, puis dissémination mondiale du risque via la titrisation (CDO/ABS).",
+                    "Elle provient de la faillite simultanée des banques centrales européennes suite à l'abandon de l'étalon-or.",
+                    "Elle a été causée par une politique budgétaire d'austérité extrême menée aux États-Unis dès 2002."
+                ],
+                correct: 1,
+                explanation: "Un choc endogène naît des déséquilibres internes du système (bulle immobilière + endettement excessif). La titrisation a transformé des créances locales risquées en titres complexes détenus par les banques mondiales, paralysant le crédit interbancaire.",
+                traps: "Le choc pétrolier est un choc exogène (années 1970), pas la cause de la crise de 2007."
+            },
+            {
+                id: 303,
+                session: 3,
+                question: "Pourquoi distingue-t-on en histoire économique la « Grande Dépression » (1873-1896) de la « Grande Crise » amorcée en 1929 ?",
+                options: [
+                    "La Grande Dépression (1873-1896) est une phase longue de baisse des prix et des marges (déflation) sans effondrement massif des volumes produits, tandis que la Grande Crise de 1929 entraîne un krach financier suivi d'une chute brutale du PIB et d'un chômage de masse.",
+                    "La Grande Dépression a été marquée par une hyperinflation mondiale, tandis que 1929 a été une période de plein emploi.",
+                    "La Grande Dépression n'a touché que l'agriculture, tandis que 1929 n'a affecté que l'industrie textile.",
+                    "La Grande Crise de 1929 a duré moins de six mois grâce à l'intervention immédiate du FMI."
+                ],
+                correct: 0,
+                explanation: "1873-1896 correspond à une phase B de Kondratiev (déflation lente, concurrence accrue, mais maintien de la croissance en volume). 1929 est une crise de surproduction et krach boursier provoquant une contraction historique du PIB et du commerce mondial.",
+                traps: "Le FMI n'existait pas en 1929 (il a été créé à Bretton Woods en 1944)."
+            },
+            {
+                id: 304,
+                session: 3,
+                question: "Comment distingue-t-on un « choc symétrique » d'un « choc asymétrique », et pourquoi cette distinction est-elle cruciale dans une union monétaire comme la zone euro ?",
+                options: [
+                    "Un choc symétrique n'affecte qu'un seul pays, ce qui permet à la Banque Centrale d'ajuster facilement ses taux pour ce seul pays.",
+                    "Un choc symétrique frappe l'ensemble des pays d'une zone de manière similaire (appelant une réponse monétaire commune), tandis qu'un choc asymétrique ne touche qu'un pays ou un secteur spécifique (rendant la politique monétaire unique inadaptée).",
+                    "Un choc symétrique augmente toujours les exportations, tandis qu'un choc asymétrique réduit toujours les importations.",
+                    "Un choc asymétrique est obligatoirement d'origine exogène, alors qu'un choc symétrique est toujours endogène."
+                ],
+                correct: 1,
+                explanation: "Face à un choc asymétrique (ex. crise immobilière en Espagne ou crise de la dette en Grèce), la BCE ne peut pas fixer un taux d'intérêt différent pour chaque pays : l'ajustement doit alors passer par les budgets nationaux ou la mobilité des facteurs.",
+                traps: "L'option A inverse la définition et la conséquence de politique monétaire."
+            },
+
+            // --- SÉANCE 4 ---
+            {
+                id: 401,
+                session: 4,
+                visualType: "finance",
+                visualTitle: "Animation des circuits de financement : Finance directe vs Intermédiée",
+                question: "En observant le schéma animé des circuits de financement ci-dessus, quelle caractéristique définit exactement la « finance externe directe » (ou désintermédiée) par rapport à la « finance intermédiée » ?",
+                options: [
+                    "L'entreprise finance ses investissements uniquement grâce à ses propres bénéfices non distribués (autofinancement).",
+                    "Les agents à besoin de financement émettent directement des titres (actions, obligations) achetés par les agents à capacité de financement sur les marchés financiers, sans création monétaire bancaire.",
+                    "Une banque commerciale collecte l'épargne des ménages sur des livrets puis accorde un prêt bancaire classique en assumant le risque de défaut.",
+                    "La Banque Centrale prête directement aux ménages sans passer par les banques commerciales."
+                ],
+                correct: 1,
+                explanation: "Dans la finance directe, prêteurs et emprunteurs se rencontrent directement sur les marchés de capitaux via des titres financiers. Dans la finance intermédiée, un intermédiaire financier (banque) s'interpose entre l'épargnant et l'emprunteur.",
+                traps: "L'option A décrit la finance interne (autofinancement). L'option C décrit précisément la finance externe intermédiée."
+            },
+            {
+                id: 402,
+                session: 4,
+                question: "Quelle différence institutionnelle et géographique distingue la BCE (Banque Centrale Européenne) du SEBC (Système Européen de Banques Centrales) ?",
+                options: [
+                    "La BCE gère la politique budgétaire des États, tandis que le SEBC gère uniquement les réserves d'or de la France et de l'Allemagne.",
+                    "La BCE est l'organe central de décision de la zone euro, tandis que le SEBC regroupe la BCE et les banques centrales nationales (BCN) de TOUS les États membres de l'Union européenne (y compris ceux n'ayant pas adopté l'euro).",
+                    "Le SEBC ne comprend que les pays fondateurs de 1957, alors que la BCE regroupe tous les pays de l'OCDE.",
+                    "La BCE émet uniquement la monnaie scripturale, tandis que le SEBC est une banque commerciale privée."
+                ],
+                correct: 1,
+                explanation: "Il faut distinguer trois cercles : la BCE (institution à Francfort), l'Eurosystème (BCE + BCN des pays ayant adopté l'euro), et le SEBC (BCE + BCN des 27 États membres de l'UE, dont la Suède, la Pologne, etc.).",
+                traps: "Beaucoup d'étudiants confondent Eurosystème et SEBC en oubliant que le SEBC inclut les pays de l'UE hors zone euro."
+            },
+            {
+                id: 403,
+                session: 4,
+                question: "Quel est l'ordre décroissant exact des quatre grands marchés financiers en fonction de leurs volumes quotidiens de transactions ?",
+                options: [
+                    "1. Marché actions > 2. Marché obligataire > 3. Marché des changes > 4. Marché monétaire",
+                    "1. Marché des changes (Forex) > 2. Marché monétaire > 3. Marché obligataire (taux) > 4. Marché actions",
+                    "1. Marché obligataire > 2. Marché des changes > 3. Marché actions > 4. Marché monétaire",
+                    "1. Marché monétaire > 2. Marché actions > 3. Marché des changes > 4. Marché obligataire"
+                ],
+                correct: 1,
+                explanation: "Le marché des changes (Forex) est de loin le plus vaste au monde (plus de 7 000 milliards $ par jour), suivi du marché monétaire (refinancement court terme des banques et États), du marché obligataire (dettes moyen/long terme) et enfin du marché actions.",
+                traps: "Le piège classique est de placer le marché actions en tête parce qu'il est le plus commenté dans les médias (CAC 40, Dow Jones)."
+            },
+            {
+                id: 404,
+                session: 4,
+                question: "Quelle proposition distingue correctement la monnaie fiduciaire de la monnaie scripturale ainsi que les modèles bancaires allemand et britannique/français ?",
+                options: [
+                    "La monnaie fiduciaire désigne les écritures comptables bancaires ; le modèle allemand impose la séparation stricte entre banques de dépôt et d'affaires.",
+                    "La monnaie fiduciaire regroupe les pièces et billets (basés sur la confiance), tandis que la monnaie scripturale correspond aux avoirs en compte bancaire (majoritaire) ; le modèle allemand privilégie la banque universelle contrairement à la spécialisation historique franco-britannique.",
+                    "La monnaie scripturale est émise uniquement par le Trésor public ; le modèle britannique interdit aux banques de détenir des actions.",
+                    "La monnaie fiduciaire représente plus de 90 % de la masse monétaire moderne dans la zone euro."
+                ],
+                correct: 1,
+                explanation: "La monnaie fiduciaire (du latin fiducia, confiance) correspond aux espèces (environ 10 % de la masse monétaire), tandis que la monnaie scripturale (écritures en compte) représente environ 90 %. Le modèle allemand de banque universelle (Hausbank) cumule crédit, dépôt et investissement.",
+                traps: "L'option A inverse les définitions de monnaie fiduciaire/scripturale et attribue le modèle anglo-saxon à l'Allemagne."
+            },
+
+            // --- SÉANCE 5 ---
+            {
+                id: 501,
+                session: 5,
+                visualType: "kaldor",
+                visualTitle: "Animation du Carré Magique de Nicholas Kaldor (Relance vs Rigueur)",
+                question: "Sur le diagramme animé du « carré magique » de Nicholas Kaldor ci-dessus, pourquoi une politique conjoncturelle de relance budgétaire (bascule vers la courbe en pointillés) empêche-t-elle généralement d'atteindre simultanément les 4 sommets idéaux ?",
+                options: [
+                    "Parce que la stimulation de la demande favorise la croissance et l'emploi, mais tend à dégrader la stabilité des prix (inflation) et l'équilibre extérieur (hausse des importations).",
+                    "Parce que le carré magique impose par traité européen que le taux de chômage soit toujours égal au taux d'inflation.",
+                    "Parce qu'une politique de relance réduit systématiquement le PIB en volume tout en générant un excédent commercial record.",
+                    "Parce que la politique monétaire de la Banque Centrale interdit toute hausse des dépenses publiques."
+                ],
+                correct: 0,
+                explanation: "Le carré magique illustre les dilemmes de politique économique : stimuler l'activité (sommets croissance et emploi) génère des tensions inflationnistes (recul du sommet stabilité des prix) et un appel aux importations (recul du sommet équilibre extérieur).",
+                traps: "Les autres options inventent des règles juridiques inexistantes ou inversent les mécanismes macroéconomiques de la relance."
+            },
+            {
+                id: 502,
+                session: 5,
+                question: "Comment distingue-t-on les trois variantes historiques du mercantilisme européen (XVIe–XVIIIe siècles) ?",
+                options: [
+                    "Le bullionisme espagnol (accumulation directe d'or et d'argent), le colbertisme français (développement des manufactures royales et exportations industrielles) et le commercialisme britannique (maîtrise des mers et du commerce maritime).",
+                    "Le keynésianisme français, le monétarisme britannique et le physiocratisme espagnol.",
+                    "Le libre-échange espagnol, le protectionnisme éducateur allemand et l'autarcie hollandaise.",
+                    "Le mercantilisme fiduciaire, le mercantilisme scriptural et le mercantilisme numérique."
+                ],
+                correct: 0,
+                explanation: "Bien que tous les mercantilistes associent puissance de l'État et excédent en métaux précieux, l'Espagne mise sur l'or des colonies (bullionisme), la France de Colbert sur l'industrie manufacturière, et l'Angleterre (Actes de Navigation) sur le négoce maritime.",
+                traps: "Les options B et C mélangent des courants économiques du XIXe et XXe siècles avec le mercantilisme."
+            },
+            {
+                id: 503,
+                session: 5,
+                question: "Quelle distinction précise oppose la politique conjoncturelle à la politique structurelle, ainsi que la politique budgétaire à la politique monétaire ?",
+                options: [
+                    "La politique conjoncturelle agit à long terme sur les institutions, tandis que la politique structurelle régule l'activité à court terme via les taux d'intérêt.",
+                    "La politique conjoncturelle agit à court terme pour lisser les fluctuations (via la politique budgétaire de l'État et la politique monétaire de la Banque Centrale), tandis que la politique structurelle transforme durablement les fondements de l'économie (concurrence, éducation, marché du travail).",
+                    "La politique monétaire relève exclusivement du Parlement, tandis que la politique budgétaire est décidée par la Banque Centrale Européenne.",
+                    "La politique de rigueur est une politique structurelle, alors que la politique de relance est toujours une politique monétaire."
+                ],
+                correct: 1,
+                explanation: "Horizon court terme = politique conjoncturelle (instrument budgétaire : recettes/dépenses de l'État ; instrument monétaire : taux directeurs et liquidité par la Banque Centrale). Horizon long terme = politique structurelle.",
+                traps: "L'option A inverse court et long terme ; l'option C inverse les autorités responsables (État vs Banque Centrale)."
+            },
+            {
+                id: 504,
+                session: 5,
+                question: "Quelles sont les principales limites théoriques et pratiques des politiques d'offre (baisse des impôts sur les entreprises, allègement des charges, déréglementation) ?",
+                options: [
+                    "Elles provoquent immédiatement une hyperinflation par excès de demande des ménages modestes.",
+                    "Leurs effets positifs sur la compétitivité et l'investissement sont lents à se manifester, alors que leur coût budgétaire (baisse des recettes fiscales) est immédiat et que les entreprises peuvent utiliser les baisses d'impôts pour augmenter les dividendes plutôt que l'investissement.",
+                    "Elles entraînent automatiquement une appréciation brutale de la monnaie nationale et interdisent toute exportation.",
+                    "Elles sont strictement interdites par les traités de l'Union européenne."
+                ],
+                correct: 1,
+                explanation: "Contrairement aux politiques de demande (effet rapide mais fuite extérieure), les politiques d'offre souffrent d'un décalage temporel important, creusent le déficit public à court terme et comportent un risque d'effet d'aubaine (hausse des marges ou dividendes sans investissement productif).",
+                traps: "L'option A décrit une limite potentielle de la politique de demande, non de l'offre."
+            },
+
+            // --- SÉANCE 6 ---
+            {
+                id: 601,
+                session: 6,
+                visualType: "balassa",
+                visualTitle: "Animation des étapes de l'intégration régionale (Bela Balassa)",
+                question: "D'après le schéma animé des étapes de l'intégration économique régionale de Bela Balassa ci-dessus, quel élément précis marque le passage de l'étape 1 (Zone de libre-échange) à l'étape 2 (Union douanière), puis à l'étape 3 (Marché commun) ?",
+                options: [
+                    "L'étape 2 ajoute un Tarif Extérieur Commun (TEC) vis-à-vis des pays tiers, et l'étape 3 ajoute la libre circulation des facteurs de production (capitaux et travailleurs).",
+                    "L'étape 2 instaure une monnaie unique, et l'étape 3 supprime uniquement les droits de douane sur les produits agricoles.",
+                    "L'étape 2 supprime la libre circulation des personnes, et l'étape 3 rétablit des quotas d'importation entre pays membres.",
+                    "L'étape 2 harmonise toutes les politiques fiscales et sociales, et l'étape 3 crée une banque centrale fédérale."
+                ],
+                correct: 0,
+                explanation: "Progression de Balassa : 1) Zone de libre-échange (0 douane interne) → 2) Union douanière (+ Tarif Extérieur Commun) → 3) Marché commun (+ libre circulation des personnes, services et capitaux) → 4) Union économique et monétaire (+ monnaie unique et coordination).",
+                traps: "La monnaie unique n'intervient qu'à l'étape 4 (Union économique et monétaire), pas à l'étape 2."
+            },
+            {
+                id: 602,
+                session: 6,
+                question: "Comment distingue-t-on le « commerce inter-branche » du « commerce intra-branche », et quelle théorie explique ce dernier ?",
+                options: [
+                    "Le commerce inter-branche échange des produits similaires entre pays comparables (ex. voitures françaises contre allemandes), tandis que l'intra-branche échange des matières premières contre des produits manufacturés.",
+                    "Le commerce inter-branche porte sur des produits de secteurs différents (expliqué par les avantages comparatifs de Ricardo/HOS), tandis que le commerce intra-branche porte sur l'échange croisé de produits d'une même industrie (expliqué par la différenciation des produits et les économies d'échelle de P. Krugman).",
+                    "Le commerce intra-branche désigne les échanges au sein d'une même entreprise nationale, tandis que l'inter-branche désigne les échanges avec l'étranger.",
+                    "Le commerce inter-branche est mesuré dans la balance des services, tandis que l'intra-branche figure dans le compte financier."
+                ],
+                correct: 1,
+                explanation: "Les théories classiques (Ricardo, HOS) expliquent le commerce inter-branche entre pays différents (vin vs drap). Les nouvelles théories du commerce international (Paul Krugman) expliquent le commerce intra-branche entre pays développés similaires par le goût pour la variété et les rendements croissants.",
+                traps: "L'option A inverse exactement les deux définitions. L'option C confond commerce intra-branche et commerce intra-firme (FMN)."
+            },
+            {
+                id: 603,
+                session: 6,
+                question: "Si un pays affiche un déficit de sa balance commerciale de −40 milliards d'euros, mais un excédent de ses services de +35 milliards et un excédent de ses revenus primaires et transferts de +15 milliards, quelle est sa situation ?",
+                options: [
+                    "Sa balance des transactions courantes est excédentaire de +10 milliards d'euros, ce qui signifie que le pays dégage une capacité de financement vis-à-vis du reste du monde.",
+                    "Sa balance des transactions courantes est déficitaire de −40 milliards d'euros, car seuls les biens matériels comptent.",
+                    "Sa balance commerciale est excédentaire de +50 milliards d'euros.",
+                    "Le pays est en situation de faillite souveraine immédiate auprès de l'OMC."
+                ],
+                correct: 0,
+                explanation: "Balance des transactions courantes = Balance commerciale (biens : −40) + Balance des services (+35) + Revenus primaires et secondaires (+15) = +10 milliards €. Un solde courant positif traduit une capacité de financement extérieure.",
+                traps: "Il ne faut pas confondre la balance commerciale (limitée aux marchandises) avec la balance des transactions courantes (qui intègre services et revenus)."
+            },
+            {
+                id: 604,
+                session: 6,
+                question: "Dans l'analyse des Firmes Multinationales (FMN) et de la Nouvelle Division Internationale du Travail (NDIT), quelle stratégie caractérise une filiale-atelier par opposition à une filiale-relais ?",
+                options: [
+                    "Une filiale-atelier produit à bas coûts pour réexporter vers le marché mondial (logique verticale de décomposition des processus productifs), tandis qu'une filiale-relais produit sur place pour contourner les barrières et desservir le marché local étranger (logique horizontale).",
+                    "Une filiale-atelier est toujours détenue à 100 % par l'État d'accueil, tandis qu'une filiale-relais est une banque d'affaires.",
+                    "Une filiale-atelier ne réalise que de la recherche fondamentale, tandis qu'une filiale-relais extrait uniquement des matières premières.",
+                    "Il n'existe aucune différence stratégique entre ces deux types d'implantations à l'étranger."
+                ],
+                correct: 0,
+                explanation: "La typologie des FMN distingue la stratégie horizontale (filiale-relais : reproduire la production près des consommateurs étrangers) et la stratégie verticale (filiale-atelier : fragmenter la chaîne de valeur pour profiter des écarts de coûts salariaux dans la NDIT).",
+                traps: "L'option C inverse les fonctions : la R&D reste généralement concentrée dans le pays d'origine, tandis que l'assemblage est confié aux filiales-ateliers."
+            },
+
+            // --- SÉANCE 7 ---
+            {
+                id: 701,
+                session: 7,
+                visualType: "triffin",
+                visualTitle: "Animation du Dilemme de Triffin (Système de Bretton Woods, 1958)",
+                question: "En référence à l'animation du « dilemme de Triffin » ci-dessus, pourquoi le dollar américain a-t-il perdu son pouvoir d'attraction et sa crédibilité à partir de 1958-1960 dans le système de Bretton Woods ?",
+                options: [
+                    "Parce que les États-Unis accumulaient des excédents commerciaux colossaux qui asséchaient la planète en dollars.",
+                    "Parce que pour alimenter l'économie mondiale en liquidités, les États-Unis devaient creuser leur déficit extérieur, si bien que les dollars détenus à l'étranger ont dépassé le stock d'or de Fort Knox, menaçant la convertibilité à 35 $ l'once.",
+                    "Parce que le Fonds Monétaire International avait remplacé le dollar par le Bancor britannique dès 1958.",
+                    "Parce que l'Union européenne avait déjà mis en circulation l'euro comme monnaie de réserve mondiale."
+                ],
+                correct: 1,
+                explanation: "Le paradoxe de Robert Triffin (1960) montre la contradiction du Gold Exchange Standard : le monde a besoin de dollars (donc de déficits américains) pour croître, mais l'accumulation de créances en dollars finit par dépasser l'encaisse-or américaine, provoquant une crise de confiance (ruée vers l'or) qui aboutira à la suspension de la convertibilité en août 1971.",
+                traps: "L'option A décrit la situation inverse (le « dollar gap » de l'immédiat après-guerre 1945-1950, avant que la tendance ne s'inverse vers le « dollar glut » dès 1958)."
+            },
+            {
+                id: 702,
+                session: 7,
+                visualType: "jcurve",
+                visualTitle: "Animation de la Courbe en J lors d'une dévaluation compétitive",
+                question: "Sur le graphique animé de la « courbe en J » ci-dessus, pourquoi une dévaluation compétitive entraîne-t-elle d'abord une dégradation temporaire de la balance commerciale avant son amélioration ?",
+                options: [
+                    "Parce qu'à court terme, les quantités échangées sont rigides (effet-prix immédiat : les importations coûtent plus cher immédiatement), tandis que l'effet-volume favorable (hausse des exportations grâce à la baisse des prix en devises) ne joue qu'avec retard.",
+                    "Parce que la Banque Centrale interdit toute exportation pendant les six premiers mois suivant la dévaluation.",
+                    "Parce qu'une dévaluation augmente immédiatement le prix des produits exportés exprimé en devises étrangères.",
+                    "Parce que les consommateurs nationaux achètent deux fois plus de produits étrangers lorsque ceux-ci deviennent plus chers."
+                ],
+                correct: 0,
+                explanation: "La courbe en J illustre le théorème des élasticités critiques (Marshall-Lerner) : à court terme, les contrats sont déjà signés, donc la facture des importations grimpe immédiatement (effet-prix négatif). À moyen terme, la compétitivité-prix stimule les volumes exportés et freine les importations (effet-volume positif).",
+                traps: "Une dévaluation baisse le prix des exportations en devises étrangères (et non l'inverse comme le prétend l'option C)."
+            },
+            {
+                id: 703,
+                session: 7,
+                question: "Lors des négociations de Bretton Woods en juillet 1944, quel était le point commun et quelle était la divergence majeure entre le plan britannique (Keynes) et le plan américain (White) ?",
+                options: [
+                    "Point commun : instaurer des changes flottants purs ; Divergence : Keynes voulait le dollar comme monnaie unique, White voulait l'or.",
+                    "Point commun : stabiliser les taux de change fixes et bannir les dévaluations compétitives ; Divergence : Keynes proposait une monnaie supranationale neutre (le Bancor) et un ajustement symétrique pénalisant aussi les pays excédentaires, tandis que White imposait le dollar et l'ajustement sur les seuls pays déficitaires.",
+                    "Point commun : supprimer le FMI et la Banque Mondiale ; Divergence : Keynes soutenait le protectionnisme éducateur.",
+                    "Point commun : créer l'ECU européen ; Divergence : White refusait toute convertibilité du dollar en or."
+                ],
+                correct: 1,
+                explanation: "Keynes et White voulaient tous deux éviter le chaos monétaire des années 1930 (changes fixes ajustables). Mais Keynes voulait éviter l'hégémonie d'une monnaie nationale via une chambre de compensation (le Bancor), alors que les États-Unis (détenteurs de 2/3 de l'or mondial) ont imposé le plan White centré sur le dollar.",
+                traps: "L'option A inverse les propositions de Keynes et de White et confond changes fixes et changes flottants."
+            },
+            {
+                id: 704,
+                session: 7,
+                question: "Quelle opposition théorique structurait le débat monétaire britannique au XIXe siècle entre le « Currency Principle » et le « Banking Principle » ?",
+                options: [
+                    "Le Currency Principle exigeait que l'émission de billets soit strictement limitée par le stock d'or (pour éviter toute inflation), tandis que le Banking Principle soutenait que l'émission monétaire devait s'adapter avec souplesse aux besoins réels de crédit du commerce.",
+                    "Le Currency Principle défendait la suppression de l'or au profit de la monnaie électronique, tandis que le Banking Principle prônait le retour au troc.",
+                    "Le Currency Principle était défendu par Keynes à Bretton Woods, tandis que le Banking Principle a créé la Banque Centrale Européenne.",
+                    "Le Currency Principle interdisait aux banques de recevoir des dépôts, tandis que le Banking Principle interdisait l'usage des pièces métalliques."
+                ],
+                correct: 0,
+                explanation: "Pour l'école de la circulation (Currency Principle, D. Ricardo), la monnaie en circulation doit varier exactement comme si elle était uniquement métallique (100 % couverte par l'or). Pour l'école bancaire (Banking Principle, T. Tooke), l'émission de billets répondant à des besoins commerciaux réels ne peut pas être inflationniste (loi du reflux).",
+                traps: "Les options B et C commettent des anachronismes historiques majeurs (le débat date du XIXe siècle, culminant avec l'Acte de Peel de 1844)."
+            }
+        ];
+
+        // =========================================================================
+        // 4. GÉNÉRATEUR D'ANIMATIONS VISUELLES SVG POUR LES QUESTIONS COMPLEXES
+        // =========================================================================
+        function getVisualSVG(type) {
+            switch (type) {
+                case 'cycle':
+                    return `
+                    <svg viewBox="0 0 540 210" class="w-full max-w-lg h-auto">
+                        <!-- Axes -->
+                        <line x1="40" y1="180" x2="510" y2="180" stroke="#94a3b8" stroke-width="2" />
+                        <line x1="40" y1="20" x2="40" y2="180" stroke="#94a3b8" stroke-width="2" />
+                        <!-- Tendance séculaire (Trend) -->
+                        <line x1="40" y1="155" x2="500" y2="55" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6,6" />
+                        <text x="435" y="48" fill="#64748b" font-size="11" font-weight="600">Trend (Tendance)</text>
+                        <!-- Courbe sinusoïdale animée du cycle -->
+                        <path d="M 45 150 Q 115 35, 185 50 T 325 140 T 485 35" fill="none" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" class="svg-draw" />
+                        <!-- Points clés des 4 phases -->
+                        <g class="svg-pulse">
+                            <circle cx="95" cy="95" r="5" fill="#10b981" />
+                            <rect x="48" y="65" width="76" height="20" rx="5" fill="#ecfdf5" stroke="#10b981" />
+                            <text x="86" y="79" text-anchor="middle" fill="#047857" font-size="10" font-weight="700">1. Expansion</text>
+                        </g>
+                        <g>
+                            <circle cx="185" cy="50" r="6" fill="#e11d48" />
+                            <rect x="145" y="18" width="96" height="22" rx="5" fill="#fff1f2" stroke="#e11d48" />
+                            <text x="193" y="33" text-anchor="middle" fill="#be123c" font-size="10" font-weight="700">2. Crise / Rupture</text>
+                        </g>
+                        <g>
+                            <circle cx="265" cy="115" r="5" fill="#f59e0b" />
+                            <rect x="215" y="125" width="110" height="22" rx="5" fill="#fffbeb" stroke="#f59e0b" />
+                            <text x="270" y="140" text-anchor="middle" fill="#b45309" font-size="10" font-weight="700">3. Récession / Dépr.</text>
+                        </g>
+                        <g class="svg-pulse">
+                            <circle cx="385" cy="115" r="5" fill="#4f46e5" />
+                            <rect x="355" y="128" width="76" height="20" rx="5" fill="#eef2ff" stroke="#4f46e5" />
+                            <text x="393" y="142" text-anchor="middle" fill="#4338ca" font-size="10" font-weight="700">4. Reprise</text>
+                        </g>
+                        <text x="15" y="100" fill="#64748b" font-size="11" font-weight="600" transform="rotate(-90 15,100)">PIB réel</text>
+                        <text x="480" y="198" fill="#64748b" font-size="11" font-weight="600">Temps</text>
+                    </svg>`;
+
+                case 'kaldor':
+                    return `
+                    <svg viewBox="0 0 520 230" class="w-full max-w-lg h-auto">
+                        <!-- Axes orthogonaux -->
+                        <line x1="260" y1="25" x2="260" y2="205" stroke="#94a3b8" stroke-width="1.5" />
+                        <line x1="120" y1="115" x2="400" y2="115" stroke="#94a3b8" stroke-width="1.5" />
+                        <!-- Labels des 4 sommets -->
+                        <text x="260" y="16" text-anchor="middle" fill="#334155" font-size="11" font-weight="700">Croissance PIB (+)</text>
+                        <text x="410" y="119" text-anchor="start" fill="#334155" font-size="11" font-weight="700">Plein emploi (Chômage -)</text>
+                        <text x="260" y="222" text-anchor="middle" fill="#334155" font-size="11" font-weight="700">Stabilité des prix (Inflation -)</text>
+                        <text x="110" y="119" text-anchor="end" fill="#334155" font-size="11" font-weight="700">Équilibre extérieur (+)</text>
+                        <!-- Carré idéal théorique -->
+                        <polygon points="260,35 375,115 260,195 145,115" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4,4" />
+                        <!-- Situation initiale (en bleu) -->
+                        <polygon points="260,70 325,115 260,165 195,115" fill="rgba(79, 70, 229, 0.15)" stroke="#4f46e5" stroke-width="2.5" />
+                        <!-- Effet d'une relance (expansion croissance/emploi, recul prix/extérieur) -->
+                        <polygon points="260,42 362,115 260,138 225,115" fill="rgba(16, 185, 129, 0.18)" stroke="#10b981" stroke-width="3" stroke-dasharray="6,3" class="svg-draw" />
+                        <!-- Légende -->
+                        <rect x="10" y="12" width="12" height="12" rx="2" fill="#4f46e5" />
+                        <text x="28" y="22" fill="#475569" font-size="10" font-weight="600">Équilibre initial</text>
+                        <rect x="10" y="30" width="12" height="12" rx="2" fill="#10b981" />
+                        <text x="28" y="40" fill="#047857" font-size="10" font-weight="600">Effet Relance (Croissance ↑, Inflation ↑)</text>
+                    </svg>`;
+
+                case 'finance':
+                    return `
+                    <svg viewBox="0 0 540 200" class="w-full max-w-lg h-auto">
+                        <!-- Agents à capacité de financement (Gauche) -->
+                        <rect x="15" y="55" width="125" height="90" rx="12" fill="#ecfdf5" stroke="#10b981" stroke-width="2" />
+                        <text x="77" y="92" text-anchor="middle" fill="#065f46" font-size="11" font-weight="700">Agents à capacité</text>
+                        <text x="77" y="108" text-anchor="middle" fill="#047857" font-size="10">de financement</text>
+                        <text x="77" y="124" text-anchor="middle" fill="#059669" font-size="9">(Ménages épargnants)</text>
+
+                        <!-- Agents à besoin de financement (Droite) -->
+                        <rect x="400" y="55" width="125" height="90" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" />
+                        <text x="462" y="92" text-anchor="middle" fill="#312e81" font-size="11" font-weight="700">Agents à besoin</text>
+                        <text x="462" y="108" text-anchor="middle" fill="#3730a3" font-size="10">de financement</text>
+                        <text x="462" y="124" text-anchor="middle" fill="#4f46e5" font-size="9">(Entreprises, État)</text>
+
+                        <!-- Canal Haut : Finance Directe (Marchés) -->
+                        <rect x="195" y="15" width="150" height="48" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="2" />
+                        <text x="270" y="36" text-anchor="middle" fill="#92400e" font-size="11" font-weight="700">Marchés Financiers</text>
+                        <text x="270" y="51" text-anchor="middle" fill="#b45309" font-size="9">Finance directe (Titres)</text>
+                        <path d="M 140 72 Q 165 39, 195 39" fill="none" stroke="#f59e0b" stroke-width="2.5" class="svg-draw" />
+                        <path d="M 345 39 Q 375 39, 400 72" fill="none" stroke="#f59e0b" stroke-width="2.5" class="svg-draw" />
+
+                        <!-- Canal Bas : Finance Intermédiée (Banques) -->
+                        <rect x="195" y="137" width="150" height="48" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="2" />
+                        <text x="270" y="158" text-anchor="middle" fill="#1e293b" font-size="11" font-weight="700">Banques & Institutions</text>
+                        <text x="270" y="173" text-anchor="middle" fill="#475569" font-size="9">Finance intermédiée (Crédits)</text>
+                        <path d="M 140 128 Q 165 161, 195 161" fill="none" stroke="#475569" stroke-width="2.5" stroke-dasharray="5,4" />
+                        <path d="M 345 161 Q 375 161, 400 128" fill="none" stroke="#475569" stroke-width="2.5" stroke-dasharray="5,4" />
+                    </svg>`;
+
+                case 'balassa':
+                    return `
+                    <svg viewBox="0 0 540 185" class="w-full max-w-lg h-auto">
+                        <!-- Escalier progressif de Bela Balassa -->
+                        <g>
+                            <rect x="15" y="125" width="115" height="45" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2" />
+                            <text x="72" y="145" text-anchor="middle" fill="#312e81" font-size="10" font-weight="700">1. Zone Libre-Échange</text>
+                            <text x="72" y="159" text-anchor="middle" fill="#4338ca" font-size="9">0 douane interne</text>
+                        </g>
+                        <g class="svg-pulse">
+                            <rect x="145" y="92" width="115" height="78" rx="8" fill="#c7d2fe" stroke="#4f46e5" stroke-width="2" />
+                            <text x="202" y="114" text-anchor="middle" fill="#312e81" font-size="10" font-weight="700">2. Union Douanière</text>
+                            <text x="202" y="129" text-anchor="middle" fill="#3730a3" font-size="9">+ Tarif Extérieur</text>
+                            <text x="202" y="141" text-anchor="middle" fill="#3730a3" font-size="9">Commun (TEC)</text>
+                        </g>
+                        <g>
+                            <rect x="275" y="58" width="115" height="112" rx="8" fill="#a5b4fc" stroke="#4338ca" stroke-width="2" />
+                            <text x="332" y="80" text-anchor="middle" fill="#1e1b4b" font-size="10" font-weight="700">3. Marché Commun</text>
+                            <text x="332" y="95" text-anchor="middle" fill="#312e81" font-size="9">+ Libre circulation</text>
+                            <text x="332" y="107" text-anchor="middle" fill="#312e81" font-size="9">capitaux & travail</text>
+                        </g>
+                        <g class="svg-pulse">
+                            <rect x="405" y="22" width="120" height="148" rx="8" fill="#4f46e5" stroke="#312e81" stroke-width="2" />
+                            <text x="465" y="46" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="700">4. Union Éco. & Mon.</text>
+                            <text x="465" y="62" text-anchor="middle" fill="#e0e7ff" font-size="9">+ Monnaie unique &</text>
+                            <text x="465" y="74" text-anchor="middle" fill="#e0e7ff" font-size="9">politiques communes</text>
+                        </g>
+                        <path d="M 35 105 L 430 12" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" class="svg-draw" />
+                    </svg>`;
+
+                case 'triffin':
+                    return `
+                    <svg viewBox="0 0 420 175" class="w-full max-w-md h-auto">
+                        <!-- Socle de la balance -->
+                        <polygon points="185,155 215,155 200,65" fill="#475569" />
+                        <rect x="150" y="155" width="100" height="10" rx="4" fill="#334155" />
+                        <!-- Fléau incliné animé -->
+                        <g class="svg-tilt">
+                            <line x1="70" y1="65" x2="330" y2="65" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+                            <!-- Plateau Gauche : Stock d'or US limité -->
+                            <line x1="70" y1="65" x2="70" y2="100" stroke="#64748b" stroke-width="2" />
+                            <rect x="25" y="100" width="90" height="34" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2" />
+                            <text x="70" y="116" text-anchor="middle" fill="#92400e" font-size="10" font-weight="700">Stock d'or US</text>
+                            <text x="70" y="128" text-anchor="middle" fill="#b45309" font-size="9">(Fort Knox limité)</text>
+                            <!-- Plateau Droit : Dollars détenus à l'étranger -->
+                            <line x1="330" y1="65" x2="330" y2="100" stroke="#64748b" stroke-width="2" />
+                            <rect x="275" y="100" width="110" height="38" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2" />
+                            <text x="330" y="116" text-anchor="middle" fill="#991b1b" font-size="10" font-weight="700">Dollars externes</text>
+                            <text x="330" y="129" text-anchor="middle" fill="#b91c1c" font-size="9">(Déficits US > Or)</text>
+                        </g>
+                        <circle cx="200" cy="65" r="6" fill="#4f46e5" />
+                        <text x="200" y="22" text-anchor="middle" fill="#be123c" font-size="11" font-weight="700">Dilemme de Triffin : perte de crédibilité-or du $</text>
+                    </svg>`;
+
+                case 'jcurve':
+                    return `
+                    <svg viewBox="0 0 520 200" class="w-full max-w-lg h-auto">
+                        <!-- Axes -->
+                        <line x1="55" y1="20" x2="55" y2="180" stroke="#94a3b8" stroke-width="2" />
+                        <!-- Ligne d'équilibre commercial = 0 -->
+                        <line x1="55" y1="95" x2="495" y2="95" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,5" />
+                        <text x="48" y="99" text-anchor="end" fill="#64748b" font-size="11" font-weight="700">0</text>
+                        <text x="25" y="55" fill="#10b981" font-size="10" font-weight="700">+ Excédent</text>
+                        <text x="25" y="145" fill="#e11d48" font-size="10" font-weight="700">- Déficit</text>
+                        <!-- Courbe en J animée -->
+                        <path d="M 65 95 C 95 105, 115 162, 150 162 C 195 162, 235 85, 310 50 C 370 25, 430 28, 480 28" fill="none" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" class="svg-draw" />
+                        <!-- Annotations -->
+                        <circle cx="65" cy="95" r="4.5" fill="#4f46e5" />
+                        <text x="72" y="84" fill="#312e81" font-size="10" font-weight="700">Dévaluation (t0)</text>
+                        <rect x="95" y="167" width="135" height="22" rx="5" fill="#fff1f2" stroke="#e11d48" />
+                        <text x="162" y="182" text-anchor="middle" fill="#be123c" font-size="9.5" font-weight="700">1. Effet-prix négatif (CT)</text>
+                        <rect x="295" y="58" width="165" height="22" rx="5" fill="#ecfdf5" stroke="#10b981" />
+                        <text x="377" y="73" text-anchor="middle" fill="#047857" font-size="9.5" font-weight="700">2. Effet-volume positif (MT)</text>
+                    </svg>`;
+
+                default:
+                    return '';
+            }
+        }
+
+        // =========================================================================
+        // 5. GESTION DE L'ÉTAT & PERSISTANCE LOCALSTORAGE
+        // =========================================================================
+        const STORAGE_KEY = 'ecomaster_l1_state_v1';
+
+        let appState = {
+            darkMode: false,
+            checkedItems: {},       // ex: { "1-0": true, "1-1": true }
+            flashcardStatus: {},    // ex: { 1: "mastered", 2: "review" }
+            qcmStats: {
+                totalAnswered: 0,
+                totalCorrect: 0,
+                bySession: {
+                    1: { answered: 0, correct: 0 },
+                    2: { answered: 0, correct: 0 },
+                    3: { answered: 0, correct: 0 },
+                    4: { answered: 0, correct: 0 },
+                    5: { answered: 0, correct: 0 },
+                    6: { answered: 0, correct: 0 },
+                    7: { answered: 0, correct: 0 }
+                },
+                wrongQuestionIds: [] // Liste des IDs de questions QCM ratées non encore corrigées
+            }
+        };
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    appState = {
+                        ...appState,
+                        ...parsed,
+                        qcmStats: {
+                            ...appState.qcmStats,
+                            ...(parsed.qcmStats || {}),
+                            bySession: {
+                                ...appState.qcmStats.bySession,
+                                ...((parsed.qcmStats && parsed.qcmStats.bySession) || {})
+                            }
+                        }
+                    };
+                }
+            } catch (e) {
+                console.warn("Impossible de charger localStorage :", e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.warn("Impossible de sauvegarder dans localStorage :", e);
+            }
+        }
+
+        // =========================================================================
+        // 6. INITIALISATION & NAVIGATION ENTRE LES 4 ONGLETS
+        // =========================================================================
+        window.onload = function () {
+            loadState();
+            applyTheme();
+            renderChecklists();
+            initFlashcards();
+            renderQcmMenuSessions();
+            updateProgressDashboard();
+            switchTab('reviser');
+            lucide.createIcons();
+        };
+
+        function toggleDarkMode() {
+            appState.darkMode = !appState.darkMode;
+            saveState();
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const html = document.documentElement;
+            const moon = document.getElementById('icon-moon');
+            const sun = document.getElementById('icon-sun');
+            if (appState.darkMode) {
+                html.classList.add('dark');
+                moon.classList.add('hidden');
+                sun.classList.remove('hidden');
+            } else {
+                html.classList.remove('dark');
+                moon.classList.remove('hidden');
+                sun.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabName) {
+            // Masquer tous les contenus
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            // Styles des boutons desktop
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-white');
+            });
+            const activeDesk = document.getElementById(`nav-${tabName}`);
+            if (activeDesk) {
+                activeDesk.classList.remove('text-slate-600', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-white');
+                activeDesk.classList.add('bg-white', 'dark:bg-slate-900', 'text-indigo-600', 'dark:text-indigo-400', 'shadow-sm');
+            }
+
+            // Styles des boutons mobile
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-50', 'dark:bg-indigo-950', 'text-indigo-600', 'dark:text-indigo-400');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
+            });
+            const activeMob = document.getElementById(`mob-${tabName}`);
+            if (activeMob) {
+                activeMob.classList.remove('text-slate-500', 'dark:text-slate-400');
+                activeMob.classList.add('bg-indigo-50', 'dark:bg-indigo-950', 'text-indigo-600', 'dark:text-indigo-400');
+            }
+
+            // Rafraîchir les données dynamiques selon l'onglet
+            if (tabName === 'progres') updateProgressDashboard();
+            if (tabName === 'qcm') updateQcmErrorBadges();
+            lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // =========================================================================
+        // 7. LOGIQUE ONGLET 1 : RÉVISER (CHECK-LISTS & SYNTHÈSES)
+        // =========================================================================
+        function renderChecklists() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+
+            let totalItems = 0;
+            let doneItems = 0;
+
+            SESSIONS_DATA.forEach(sess => {
+                const sessTotal = sess.items.length;
+                let sessDone = 0;
+                sess.items.forEach((_, idx) => {
+                    if (appState.checkedItems[`${sess.id}-${idx}`]) sessDone++;
+                });
+                totalItems += sessTotal;
+                doneItems += sessDone;
+                const pct = Math.round((sessDone / sessTotal) * 100);
+
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden";
+
+                let itemsHtml = '';
+                sess.items.forEach((label, idx) => {
+                    const key = `${sess.id}-${idx}`;
+                    const isChecked = !!appState.checkedItems[key];
+                    itemsHtml += `
+                        <label class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition select-none">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheckItem('${key}')" class="mt-0.5 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer">
+                            <span class="text-sm leading-snug ${isChecked ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200 font-medium'}">
+                                ${label}
+                            </span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                                    Séance ${sess.id}
+                                </span>
+                                <span class="text-xs font-semibold ${pct === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}">
+                                    ${sessDone}/${sessTotal} maîtrisés (${pct}%)
+                                </span>
+                            </div>
+                            <h3 class="font-bold text-base sm:text-lg text-slate-900 dark:text-white">${sess.title.replace(/^Séance \d+ : /, '')}</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleSynthesis(${sess.id})" class="text-xs font-semibold px-3 py-2 rounded-xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950 text-slate-700 dark:text-slate-200 hover:text-indigo-600 transition flex items-center gap-1.5">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                <span>Fiche synthèse</span>
+                            </button>
+                            <button onclick="startQcm('session', ${sess.id})" class="text-xs font-semibold px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition flex items-center gap-1.5">
+                                <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                                <span>QCM Séance ${sess.id}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fiche de synthèse dépliable -->
+                    <div id="synthesis-box-${sess.id}" class="hidden bg-indigo-50/60 dark:bg-indigo-950/40 px-5 py-4 border-b border-indigo-100 dark:border-indigo-900/60 text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
+                        <p class="font-bold text-indigo-800 dark:text-indigo-300 text-xs uppercase tracking-wider mb-1">Essentiel à retenir :</p>
+                        <p>${sess.synthesis}</p>
+                    </div>
+
+                    <!-- Liste des compétences à cocher -->
+                    <div class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                        ${itemsHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Compteurs globaux
+            const globalPct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+            document.getElementById('checklist-done-count').textContent = doneItems;
+            document.getElementById('checklist-total-count').textContent = totalItems;
+            document.getElementById('checklist-pct-badge').textContent = `${globalPct}%`;
+        }
+
+        function toggleCheckItem(key) {
+            appState.checkedItems[key] = !appState.checkedItems[key];
+            saveState();
+            renderChecklists();
+            lucide.createIcons();
+        }
+
+        function toggleSynthesis(sessionId) {
+            const box = document.getElementById(`synthesis-box-${sessionId}`);
+            if (box) box.classList.toggle('hidden');
+        }
+
+        // =========================================================================
+        // 8. LOGIQUE ONGLET 2 : FLASHCARDS 3D
+        // =========================================================================
+        let filteredFlashcards = [...FLASHCARDS_DATA];
+        let fcIndex = 0;
+        let fcFlipped = false;
+        let fcReviewOnly = false;
+
+        function initFlashcards() {
+            filterFlashcards();
+        }
+
+        function toggleReviewOnlyFilter() {
+            fcReviewOnly = !fcReviewOnly;
+            const btn = document.getElementById('fc-review-only-btn');
+            if (fcReviewOnly) {
+                btn.classList.add('border-amber-500', 'bg-amber-50', 'dark:bg-amber-950/60', 'text-amber-800', 'dark:text-amber-200');
+            } else {
+                btn.classList.remove('border-amber-500', 'bg-amber-50', 'dark:bg-amber-950/60', 'text-amber-800', 'dark:text-amber-200');
+            }
+            filterFlashcards();
+        }
+
+        function filterFlashcards() {
+            const sessVal = document.getElementById('fc-session-filter').value;
+            filteredFlashcards = FLASHCARDS_DATA.filter(card => {
+                const matchSess = (sessVal === 'all') || (card.session === parseInt(sessVal, 10));
+                const matchReview = !fcReviewOnly || (appState.flashcardStatus[card.id] === 'review');
+                return matchSess && matchReview;
+            });
+            fcIndex = 0;
+            fcFlipped = false;
+            renderCurrentFlashcard();
+        }
+
+        function renderCurrentFlashcard() {
+            const inner = document.getElementById('fc-inner');
+            inner.classList.remove('rotate-y-180');
+            fcFlipped = false;
+
+            if (filteredFlashcards.length === 0) {
+                document.getElementById('fc-counter').textContent = "0 carte trouvée";
+                document.getElementById('fc-front-badge').textContent = "Filtre actif";
+                document.getElementById('fc-front-text').textContent = "Aucune flashcard ne correspond à ce filtre (aucune carte marquée « À revoir »).";
+                document.getElementById('fc-back-text').textContent = "Désactive le filtre « À revoir uniquement » pour parcourir toutes les cartes.";
+                document.getElementById('fc-nuance-text').textContent = "Toutes les cartes de cette sélection sont à jour.";
+                document.getElementById('fc-status-pill').textContent = "Vide";
+                return;
+            }
+
+            const card = filteredFlashcards[fcIndex];
+            const status = appState.flashcardStatus[card.id];
+
+            document.getElementById('fc-counter').textContent = `Carte ${fcIndex + 1} sur ${filteredFlashcards.length}`;
+            document.getElementById('fc-front-badge').textContent = `Séance ${card.session}`;
+            document.getElementById('fc-front-text').textContent = card.front;
+            document.getElementById('fc-back-text').textContent = card.back;
+            document.getElementById('fc-nuance-text').textContent = card.nuance;
+
+            const pill = document.getElementById('fc-status-pill');
+            pill.className = "px-2.5 py-1 rounded-full text-xs font-bold ";
+            if (status === 'mastered') {
+                pill.textContent = "✓ Maîtrisée";
+                pill.className += "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300";
+            } else if (status === 'review') {
+                pill.textContent = "↻ À revoir";
+                pill.className += "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300";
+            } else {
+                pill.textContent = "Non évaluée";
+                pill.className += "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
+            }
+        }
+
+        function flipFlashcard() {
+            if (filteredFlashcards.length === 0) return;
+            fcFlipped = !fcFlipped;
+            const inner = document.getElementById('fc-inner');
+            if (fcFlipped) {
+                inner.classList.add('rotate-y-180');
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextFlashcard() {
+            if (filteredFlashcards.length === 0) return;
+            fcIndex = (fcIndex + 1) % filteredFlashcards.length;
+            renderCurrentFlashcard();
+        }
+
+        function prevFlashcard() {
+            if (filteredFlashcards.length === 0) return;
+            fcIndex = (fcIndex - 1 + filteredFlashcards.length) % filteredFlashcards.length;
+            renderCurrentFlashcard();
+        }
+
+        function rateFlashcard(status) {
+            if (filteredFlashcards.length === 0) return;
+            const card = filteredFlashcards[fcIndex];
+            appState.flashcardStatus[card.id] = status;
+            saveState();
+
+            // Si on est en mode "À revoir uniquement" et qu'on vient de la passer en "Maîtrisée", on rafraîchit la liste
+            if (fcReviewOnly && status === 'mastered') {
+                filterFlashcards();
+            } else {
+                renderCurrentFlashcard();
+                setTimeout(() => nextFlashcard(), 280);
+            }
+        }
+
+        // =========================================================================
+        // 9. LOGIQUE ONGLET 3 : QCM INTERACTIFS (NIVEAU EXAMEN + VISUELS)
+        // =========================================================================
+        let activeQcmList = [];
+        let qcmIdx = 0;
+        let qcmSessionScore = 0;
+
+        function renderQcmMenuSessions() {
+            const grid = document.getElementById('qcm-sessions-grid');
+            grid.innerHTML = '';
+
+            SESSIONS_DATA.forEach(sess => {
+                const count = QCM_QUESTIONS.filter(q => q.session === sess.id).length;
+                const btn = document.createElement('button');
+                btn.className = "text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 rounded-2xl p-4 shadow-sm transition flex flex-col justify-between gap-2 group";
+                btn.onclick = () => startQcm('session', sess.id);
+
+                btn.innerHTML = `
+                    <div class="flex items-center justify-between w-full">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2.5 py-0.5 rounded-md">
+                            Séance ${sess.id}
+                        </span>
+                        <span class="text-xs font-semibold text-slate-400 group-hover:text-indigo-600 transition">
+                            ${count} questions →
+                        </span>
+                    </div>
+                    <p class="font-bold text-sm text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition line-clamp-2">
+                        ${sess.title.replace(/^Séance \d+ : /, '')}
+                    </p>
+                `;
+                grid.appendChild(btn);
+            });
+            updateQcmErrorBadges();
+        }
+
+        function updateQcmErrorBadges() {
+            const errCount = appState.qcmStats.wrongQuestionIds.length;
+            const span = document.getElementById('menu-error-count');
+            if (span) span.textContent = errCount;
+        }
+
+        function shuffleArr(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function startQcm(mode, sessionId = null) {
+            // S'assurer qu'on est sur l'onglet QCM
+            if (document.getElementById('tab-qcm').classList.contains('hidden')) {
+                switchTab('qcm');
+            }
+
+            let label = "";
+            if (mode === 'full') {
+                activeQcmList = shuffleArr(QCM_QUESTIONS);
+                label = "Examen complet (28 questions)";
+            } else if (mode === 'quick') {
+                activeQcmList = shuffleArr(QCM_QUESTIONS).slice(0, 14);
+                label = "Session rapide (14 questions)";
+            } else if (mode === 'session' && sessionId !== null) {
+                activeQcmList = shuffleArr(QCM_QUESTIONS.filter(q => q.session === sessionId));
+                label = `Séance ${sessionId} (Approfondi)`;
+            } else if (mode === 'errors') {
+                const wrongIds = appState.qcmStats.wrongQuestionIds;
+                const filtered = QCM_QUESTIONS.filter(q => wrongIds.includes(q.id));
+                if (filtered.length === 0) {
+                    activeQcmList = shuffleArr(QCM_QUESTIONS).slice(0, 10);
+                    label = "Aucune erreur enregistrée — Entraînement libre";
+                } else {
+                    activeQcmList = shuffleArr(filtered);
+                    label = `Correction de mes erreurs (${activeQcmList.length})`;
+                }
+            }
+
+            qcmIdx = 0;
+            qcmSessionScore = 0;
+
+            document.getElementById('qcm-mode-label').textContent = label;
+            document.getElementById('qcm-total-idx').textContent = activeQcmList.length;
+            document.getElementById('qcm-live-score').textContent = "0";
+
+            document.getElementById('qcm-menu-view').classList.add('hidden');
+            document.getElementById('qcm-results-view').classList.add('hidden');
+            document.getElementById('qcm-active-view').classList.remove('hidden');
+
+            renderQcmQuestion();
+        }
+
+        function renderQcmQuestion() {
+            const q = activeQcmList[qcmIdx];
+            const total = activeQcmList.length;
+
+            document.getElementById('qcm-curr-idx').textContent = qcmIdx + 1;
+            document.getElementById('qcm-progress-bar').style.width = `${(qcmIdx / total) * 100}%`;
+            document.getElementById('qcm-session-tag').textContent = `Séance ${q.session}`;
+            document.getElementById('qcm-question-text').textContent = q.question;
+
+            // Gestion de l'animation visuelle SVG si présente
+            const visContainer = document.getElementById('qcm-visual-container');
+            const visSvg = document.getElementById('qcm-visual-svg');
+            if (q.visualType) {
+                visContainer.classList.remove('hidden');
+                document.getElementById('qcm-visual-title').textContent = q.visualTitle || "Schéma économique animé";
+                visSvg.innerHTML = getVisualSVG(q.visualType);
+            } else {
+                visContainer.classList.add('hidden');
+                visSvg.innerHTML = '';
+            }
+
+            // Réinitialisation feedback & bouton suivant
+            document.getElementById('qcm-feedback-panel').classList.add('hidden');
+            const btnNext = document.getElementById('qcm-btn-next');
+            btnNext.classList.add('hidden');
+            document.getElementById('qcm-btn-next-label').textContent = (qcmIdx === total - 1) ? "Terminer et voir le bilan" : "Question suivante";
+
+            // Mélange des options tout en conservant le suivi de la bonne réponse
+            const indexedOptions = q.options.map((text, origIdx) => ({
+                text,
+                isCorrect: origIdx === q.correct
+            }));
+            const shuffledOpts = shuffleArr(indexedOptions);
+
+            const listEl = document.getElementById('qcm-options-list');
+            listEl.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            shuffledOpts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-left p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-indigo-500 dark:hover:border-indigo-400 flex items-start gap-3.5 group";
+                btn.dataset.correct = opt.isCorrect ? "1" : "0";
+                btn.onclick = () => submitQcmAnswer(btn, opt.isCorrect, q);
+
+                btn.innerHTML = `
+                    <span class="flex-shrink-0 w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-600 group-hover:text-white text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center justify-center transition">
+                        ${letters[idx]}
+                    </span>
+                    <span class="text-sm text-slate-800 dark:text-slate-100 font-medium leading-relaxed pt-0.5">
+                        ${opt.text}
+                    </span>
+                `;
+                listEl.appendChild(btn);
+            });
+
+            lucide.createIcons();
+        }
+
+        function replayVisualAnimation() {
+            const q = activeQcmList[qcmIdx];
+            if (q && q.visualType) {
+                const visSvg = document.getElementById('qcm-visual-svg');
+                visSvg.innerHTML = '';
+                setTimeout(() => {
+                    visSvg.innerHTML = getVisualSVG(q.visualType);
+                }, 30);
+            }
+        }
+
+        function submitQcmAnswer(clickedBtn, isCorrect, q) {
+            // Mise à jour des statistiques globales dans localStorage
+            appState.qcmStats.totalAnswered++;
+            if (!appState.qcmStats.bySession[q.session]) {
+                appState.qcmStats.bySession[q.session] = { answered: 0, correct: 0 };
+            }
+            appState.qcmStats.bySession[q.session].answered++;
+
+            if (isCorrect) {
+                qcmSessionScore++;
+                document.getElementById('qcm-live-score').textContent = qcmSessionScore;
+                appState.qcmStats.totalCorrect++;
+                appState.qcmStats.bySession[q.session].correct++;
+                // Retirer des erreurs si elle y figurait
+                appState.qcmStats.wrongQuestionIds = appState.qcmStats.wrongQuestionIds.filter(id => id !== q.id);
+            } else {
+                // Ajouter aux erreurs à retravailler
+                if (!appState.qcmStats.wrongQuestionIds.includes(q.id)) {
+                    appState.qcmStats.wrongQuestionIds.push(q.id);
+                }
+            }
+            saveState();
+
+            // Mise à jour visuelle des boutons
+            const allBtns = document.getElementById('qcm-options-list').querySelectorAll('button');
+            allBtns.forEach(btn => {
+                btn.disabled = true;
+                const badge = btn.querySelector('span:first-child');
+                if (btn.dataset.correct === "1") {
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-900');
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50/80', 'dark:bg-emerald-950/50');
+                    badge.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+                    badge.classList.add('bg-emerald-600', 'text-white');
+                } else if (btn === clickedBtn && !isCorrect) {
+                    btn.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-900');
+                    btn.classList.add('border-rose-500', 'bg-rose-50/80', 'dark:bg-rose-950/50');
+                    badge.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+                    badge.classList.add('bg-rose-600', 'text-white');
+                } else {
+                    btn.classList.add('opacity-55');
+                }
+            });
+
+            // Affichage du panneau pédagogique complet
+            const panel = document.getElementById('qcm-feedback-panel');
+            const header = document.getElementById('qcm-feedback-header');
+            panel.classList.remove('hidden', 'border-emerald-200', 'bg-emerald-50/60', 'dark:border-emerald-800', 'dark:bg-emerald-950/40', 'border-rose-200', 'bg-rose-50/60', 'dark:border-rose-800', 'dark:bg-rose-950/40');
+
+            if (isCorrect) {
+                panel.classList.add('border-emerald-200', 'bg-emerald-50/60', 'dark:border-emerald-800', 'dark:bg-emerald-950/40');
+                header.className = "flex items-center gap-2 font-bold text-base text-emerald-700 dark:text-emerald-300";
+                header.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5"></i> Exact ! Excellente maîtrise de la nuance.`;
+            } else {
+                panel.classList.add('border-rose-200', 'bg-rose-50/60', 'dark:border-rose-800', 'dark:bg-rose-950/40');
+                header.className = "flex items-center gap-2 font-bold text-base text-rose-700 dark:text-rose-300";
+                header.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5"></i> Piège détecté — Analyse la correction :`;
+            }
+
+            document.getElementById('qcm-feedback-main').textContent = q.explanation;
+            document.getElementById('qcm-feedback-traps').textContent = q.traps;
+
+            document.getElementById('qcm-progress-bar').style.width = `${((qcmIdx + 1) / activeQcmList.length) * 100}%`;
+            document.getElementById('qcm-btn-next').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function nextQcmQuestion() {
+            if (qcmIdx < activeQcmList.length - 1) {
+                qcmIdx++;
+                renderQcmQuestion();
+            } else {
+                finishQcmSession();
+            }
+        }
+
+        function finishQcmSession() {
+            document.getElementById('qcm-active-view').classList.add('hidden');
+            document.getElementById('qcm-results-view').classList.remove('hidden');
+
+            const total = activeQcmList.length;
+            const pct = Math.round((qcmSessionScore / total) * 100);
+
+            document.getElementById('qcm-res-score').textContent = qcmSessionScore;
+            document.getElementById('qcm-res-total').textContent = total;
+            document.getElementById('qcm-res-pct').textContent = `${pct}%`;
+
+            const retryBtn = document.getElementById('qcm-res-retry-wrong');
+            if (appState.qcmStats.wrongQuestionIds.length > 0) {
+                retryBtn.classList.remove('hidden');
+            } else {
+                retryBtn.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        function quitQcmToMenu() {
+            document.getElementById('qcm-active-view').classList.add('hidden');
+            document.getElementById('qcm-results-view').classList.add('hidden');
+            document.getElementById('qcm-menu-view').classList.remove('hidden');
+            updateQcmErrorBadges();
+        }
+
+        // =========================================================================
+        // 10. LOGIQUE ONGLET 4 : TABLEAU DE BORD PROGRÈS & RÉINITIALISATION
+        // =========================================================================
+        function updateProgressDashboard() {
+            // 1. KPI QCM
+            const ans = appState.qcmStats.totalAnswered;
+            const corr = appState.qcmStats.totalCorrect;
+            const qcmRate = ans > 0 ? Math.round((corr / ans) * 100) : 0;
+            document.getElementById('stat-qcm-rate').textContent = `${qcmRate}%`;
+            document.getElementById('stat-qcm-answered').textContent = ans;
+
+            // 2. KPI Check-lists
+            let totalCheck = 0;
+            let doneCheck = 0;
+            SESSIONS_DATA.forEach(s => {
+                totalCheck += s.items.length;
+                s.items.forEach((_, idx) => {
+                    if (appState.checkedItems[`${s.id}-${idx}`]) doneCheck++;
+                });
+            });
+            const checkRate = totalCheck > 0 ? Math.round((doneCheck / totalCheck) * 100) : 0;
+            document.getElementById('stat-checklist-rate').textContent = `${checkRate}%`;
+            document.getElementById('stat-checklist-count').textContent = doneCheck;
+
+            // 3. KPI Flashcards
+            let fcMastered = 0;
+            let fcReview = 0;
+            FLASHCARDS_DATA.forEach(c => {
+                if (appState.flashcardStatus[c.id] === 'mastered') fcMastered++;
+                if (appState.flashcardStatus[c.id] === 'review') fcReview++;
+            });
+            document.getElementById('stat-fc-mastered').textContent = `${fcMastered} / ${FLASHCARDS_DATA.length}`;
+            document.getElementById('stat-fc-review').textContent = fcReview;
+
+            // 4. KPI Erreurs QCM
+            const wrongIds = appState.qcmStats.wrongQuestionIds;
+            document.getElementById('stat-errors-count').textContent = wrongIds.length;
+
+            // 5. Graphique détaillé par séance
+            const barsContainer = document.getElementById('progres-sessions-bars');
+            barsContainer.innerHTML = '';
+
+            SESSIONS_DATA.forEach(sess => {
+                // % Check-list séance
+                const sTotalItems = sess.items.length;
+                let sDoneItems = 0;
+                sess.items.forEach((_, idx) => {
+                    if (appState.checkedItems[`${sess.id}-${idx}`]) sDoneItems++;
+                });
+                const sCheckPct = Math.round((sDoneItems / sTotalItems) * 100);
+
+                // % QCM séance
+                const qStat = appState.qcmStats.bySession[sess.id] || { answered: 0, correct: 0 };
+                const sQcmPct = qStat.answered > 0 ? Math.round((qStat.correct / qStat.answered) * 100) : 0;
+
+                const row = document.createElement('div');
+                row.className = "space-y-1.5 pb-3 border-b border-slate-100 dark:border-slate-800 last:border-0 last:pb-0";
+                row.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                        <span class="font-bold text-slate-800 dark:text-slate-100">Séance ${sess.id} : ${sess.title.replace(/^Séance \d+ : /, '')}</span>
+                        <div class="flex items-center gap-3 text-xs font-semibold">
+                            <span class="text-emerald-600 dark:text-emerald-400">Check-list : ${sCheckPct}%</span>
+                            <span class="text-indigo-600 dark:text-indigo-400">QCM : ${qStat.answered > 0 ? sQcmPct + '%' : '—'}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden" title="Check-list">
+                            <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: ${sCheckPct}%"></div>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden" title="Score QCM">
+                            <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${sQcmPct}%"></div>
+                        </div>
+                    </div>
+                `;
+                barsContainer.appendChild(row);
+            });
+
+            // 6. Liste des points faibles
+            const weakList = document.getElementById('weak-points-list');
+            const trainBtn = document.getElementById('btn-progres-train-weak');
+            weakList.innerHTML = '';
+
+            if (wrongIds.length === 0) {
+                trainBtn.disabled = true;
+                weakList.innerHTML = `
+                    <div class="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                        Aucune erreur en attente ! Continue de t'entraîner sur l'examen complet pour tester toutes les nuances.
+                    </div>
+                `;
+            } else {
+                trainBtn.disabled = false;
+                wrongIds.forEach(id => {
+                    const qObj = QCM_QUESTIONS.find(q => q.id === id);
+                    if (!qObj) return;
+                    const item = document.createElement('div');
+                    item.className = "p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/60 space-y-1";
+                    item.innerHTML = `
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Séance ${qObj.session}</span>
+                        <p class="text-xs font-medium text-slate-800 dark:text-slate-200 line-clamp-2">${qObj.question}</p>
+                    `;
+                    weakList.appendChild(item);
+                });
+            }
+        }
+
+        function startWeakPointsQcm() {
+            switchTab('qcm');
+            startQcm('errors');
+        }
+
+        function openResetModal() {
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function confirmResetAll() {
+            localStorage.removeItem(STORAGE_KEY);
+            appState = {
+                darkMode: appState.darkMode,
+                checkedItems: {},
+                flashcardStatus: {},
+                qcmStats: {
+                    totalAnswered: 0,
+                    totalCorrect: 0,
+                    bySession: {
+                        1: { answered: 0, correct: 0 },
+                        2: { answered: 0, correct: 0 },
+                        3: { answered: 0, correct: 0 },
+                        4: { answered: 0, correct: 0 },
+                        5: { answered: 0, correct: 0 },
+                        6: { answered: 0, correct: 0 },
+                        7: { answered: 0, correct: 0 }
+                    },
+                    wrongQuestionIds: []
+                }
+            };
+            saveState();
+            renderChecklists();
+            initFlashcards();
+            updateProgressDashboard();
+            updateQcmErrorBadges();
+            closeResetModal();
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
