@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "ÉcoMaster L1 — Révision & Entraînement",
+  "short_name": "ÉcoMaster",
+  "description": "Réviser l'analyse économique et la macroéconomie en L1.",
+  "lang": "fr-FR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#312e81",
+  "icons": [{ "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
