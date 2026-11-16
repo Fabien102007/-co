@@ -225,7 +225,7 @@
                 <div id="fc-srs-summary" class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
                     <div class="rounded-xl bg-indigo-50 dark:bg-indigo-950/50 p-3"><div id="fc-due-count" class="text-lg font-extrabold text-indigo-700 dark:text-indigo-300">28</div><div class="text-slate-500 dark:text-slate-400">À réviser</div></div>
                     <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3"><div id="fc-learned-count" class="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">0</div><div class="text-slate-500 dark:text-slate-400">Déjà apprises</div></div>
-                    <div class="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3"><div id="fc-later-count" class="text-lg font-extrabold text-amber-700 dark:text-amber-300">0</div><div class="text-slate-500 dark:text-slate-400">Plus tard</div></div>
+                    <div class="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3"><div id="fc-later-count" class="text-lg font-extrabold text-amber-700 dark:text-amber-300">0</div><div class="text-slate-500 dark:text-slate-400">Programmées</div></div>
                 </div>
             </div>
 
@@ -1681,9 +1681,9 @@
             let due = 0, learned = 0, later = 0;
             FLASHCARDS_DATA.forEach(card => {
                 const item = appState.flashcardSrs[card.id];
-                if (!item) due++;
-                else if (item.dueDate <= today) due++;
-                else { later++; learned++; }
+                if (!item || item.dueDate <= today) due++;
+                else later++;
+                if (appState.flashcardStatus[card.id] === 'mastered') learned++;
             });
             const dueEl = document.getElementById('fc-due-count');
             const learnedEl = document.getElementById('fc-learned-count');
@@ -2172,7 +2172,7 @@
                 checkedItems: {},
                 flashcardStatus: {},
                 flashcardSrs: {},
-                qcmStats:
+                qcmStats: {
                     totalAnswered: 0,
                     totalCorrect: 0,
                     bySession: {
