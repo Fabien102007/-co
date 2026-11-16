@@ -218,9 +218,14 @@
                         </select>
                         <button id="fc-review-only-btn" onclick="toggleReviewOnlyFilter()" class="text-sm font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-amber-400 transition flex items-center gap-1.5">
                             <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500"></i>
-                            <span>À revoir uniquement</span>
+                            <span>À réviser aujourd'hui</span>
                         </button>
                     </div>
+                </div>
+                <div id="fc-srs-summary" class="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="rounded-xl bg-indigo-50 dark:bg-indigo-950/50 p-3"><div id="fc-due-count" class="text-lg font-extrabold text-indigo-700 dark:text-indigo-300">28</div><div class="text-slate-500 dark:text-slate-400">À réviser</div></div>
+                    <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3"><div id="fc-learned-count" class="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">0</div><div class="text-slate-500 dark:text-slate-400">Déjà apprises</div></div>
+                    <div class="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3"><div id="fc-later-count" class="text-lg font-extrabold text-amber-700 dark:text-amber-300">0</div><div class="text-slate-500 dark:text-slate-400">Plus tard</div></div>
                 </div>
             </div>
 
@@ -290,13 +295,14 @@
                         </button>
                     </div>
 
+                    <div id="fc-srs-next" class="text-center text-xs text-slate-500 dark:text-slate-400 px-2">Retourne la carte pour t'auto-évaluer.</div>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
-                        <button onclick="rateFlashcard('review')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-semibold text-sm flex items-center justify-center gap-1.5 transition">
+                        <button onclick="rateFlashcard('again')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-semibold text-sm flex items-center justify-center gap-1.5 transition">
                             <i data-lucide="rotate-ccw" class="w-4 h-4"></i> À revoir
                         </button>
-                        <button onclick="rateFlashcard('mastered')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-1.5 shadow-sm transition">
-                            <i data-lucide="check" class="w-4 h-4"></i> Maîtrisé
-                        </button>
+                        <button onclick="rateFlashcard('hard')" class="flex-1 sm:flex-initial px-3 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-semibold text-sm transition">Difficile</button>
+                        <button onclick="rateFlashcard('good')" class="flex-1 sm:flex-initial px-3 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition">Bien</button>
+                        <button onclick="rateFlashcard('easy')" class="flex-1 sm:flex-initial px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition">Facile</button>
                     </div>
                 </div>
             </div>
@@ -1338,7 +1344,8 @@
         let appState = {
             darkMode: false,
             checkedItems: {},       // ex: { "1-0": true, "1-1": true }
-            flashcardStatus: {},    // ex: { 1: "mastered", 2: "review" }
+            flashcardStatus: {},    // compatibilité avec l'ancien suivi
+            flashcardSrs: {},       // répétition espacée par carte
             qcmStats: {
                 totalAnswered: 0,
                 totalCorrect: 0,
@@ -1579,7 +1586,9 @@
             fcSearchQuery = (document.getElementById('fc-search')?.value || '').trim().toLocaleLowerCase('fr');
             filteredFlashcards = FLASHCARDS_DATA.filter(card => {
                 const matchSess = (sessVal === 'all') || (card.session === parseInt(sessVal, 10));
-                const matchReview = !fcReviewOnly || (appState.flashcardStatus[card.id] === 'review');
+                const schedule = appState.flashcardSrs[card.id];
+                const isDue = !schedule || !schedule.dueDate || schedule.dueDate <= getTodayKey();
+                const matchReview = !fcReviewOnly || isDue;
                 const searchable = `${card.front} ${card.back} ${card.nuance}`.toLocaleLowerCase('fr');
                 const matchSearch = !fcSearchQuery || searchable.includes(fcSearchQuery);
                 return matchSess && matchReview && matchSearch;
@@ -1606,6 +1615,7 @@
 
             const card = filteredFlashcards[fcIndex];
             const status = appState.flashcardStatus[card.id];
+            const schedule = appState.flashcardSrs[card.id];
 
             document.getElementById('fc-counter').textContent = `Carte ${fcIndex + 1} sur ${filteredFlashcards.length}`;
             document.getElementById('fc-front-badge').textContent = `Séance ${card.session}`;
@@ -1622,9 +1632,16 @@
                 pill.textContent = "↻ À revoir";
                 pill.className += "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300";
             } else {
-                pill.textContent = "Non évaluée";
+                pill.textContent = "À apprendre";
                 pill.className += "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300";
             }
+            const nextInfo = document.getElementById('fc-srs-next');
+            if (nextInfo) {
+                nextInfo.textContent = schedule && schedule.dueDate
+                    ? (schedule.dueDate <= getTodayKey() ? 'À réviser maintenant' : 'Prochaine révision : ' + formatDueDate(schedule.dueDate) + ' · intervalle ' + schedule.interval + ' j')
+                    : 'Première révision : évalue la carte pour programmer le prochain rappel.';
+            }
+            updateFlashcardSrsSummary();
         }
 
         function flipFlashcard() {
@@ -1650,19 +1667,71 @@
             renderCurrentFlashcard();
         }
 
-        function rateFlashcard(status) {
+        function getTodayKey() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function formatDueDate(key) {
+            return new Date(key + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+
+        function updateFlashcardSrsSummary() {
+            const today = getTodayKey();
+            let due = 0, learned = 0, later = 0;
+            FLASHCARDS_DATA.forEach(card => {
+                const item = appState.flashcardSrs[card.id];
+                if (!item) due++;
+                else if (item.dueDate <= today) due++;
+                else { later++; learned++; }
+            });
+            const dueEl = document.getElementById('fc-due-count');
+            const learnedEl = document.getElementById('fc-learned-count');
+            const laterEl = document.getElementById('fc-later-count');
+            if (dueEl) dueEl.textContent = due;
+            if (learnedEl) learnedEl.textContent = learned;
+            if (laterEl) laterEl.textContent = later;
+        }
+
+        function rateFlashcard(rating) {
             if (filteredFlashcards.length === 0) return;
             const card = filteredFlashcards[fcIndex];
-            appState.flashcardStatus[card.id] = status;
+            const previous = appState.flashcardSrs[card.id] || { interval: 0, repetitions: 0, ease: 2.5 };
+            let interval = previous.interval || 0;
+            let repetitions = previous.repetitions || 0;
+            let ease = previous.ease || 2.5;
+
+            // Algorithme de répétition espacée inspiré de SM-2, avec des intervalles progressifs.
+            if (rating === 'again') {
+                interval = 1; repetitions = 0; ease = Math.max(1.3, ease - 0.2);
+                appState.flashcardStatus[card.id] = 'review';
+            } else if (rating === 'hard') {
+                interval = repetitions === 0 ? 1 : Math.max(2, Math.round(interval * 1.2));
+                repetitions++; ease = Math.max(1.3, ease - 0.15);
+                appState.flashcardStatus[card.id] = 'review';
+            } else if (rating === 'good') {
+                interval = repetitions === 0 ? 1 : repetitions === 1 ? 3 : Math.max(1, Math.round(interval * ease));
+                repetitions++; appState.flashcardStatus[card.id] = 'mastered';
+            } else {
+                interval = repetitions === 0 ? 4 : Math.max(4, Math.round(interval * (ease + 0.3)));
+                repetitions++; ease = Math.min(3.0, ease + 0.15);
+                appState.flashcardStatus[card.id] = 'mastered';
+            }
+
+            const due = new Date();
+            due.setHours(12, 0, 0, 0);
+            due.setDate(due.getDate() + interval);
+            const dueDate = due.getFullYear() + '-' + String(due.getMonth() + 1).padStart(2, '0') + '-' + String(due.getDate()).padStart(2, '0');
+            appState.flashcardSrs[card.id] = { interval, repetitions, ease, dueDate, lastReviewed: new Date().toISOString() };
             saveState();
 
-            // Si on est en mode "À revoir uniquement" et qu'on vient de la passer en "Maîtrisée", on rafraîchit la liste
-            if (fcReviewOnly && status === 'mastered') {
+            if (fcReviewOnly && dueDate > getTodayKey()) {
                 filterFlashcards();
             } else {
                 renderCurrentFlashcard();
                 setTimeout(() => nextFlashcard(), 280);
             }
+            updateProgressDashboard();
         }
 
         // =========================================================================
@@ -2066,6 +2135,7 @@
                 appState = {
                     ...appState,
                     ...incoming,
+                    flashcardSrs: { ...appState.flashcardSrs, ...(incoming.flashcardSrs || {}) },
                     qcmStats: {
                         ...appState.qcmStats,
                         ...incoming.qcmStats,
@@ -2101,7 +2171,8 @@
                 darkMode: appState.darkMode,
                 checkedItems: {},
                 flashcardStatus: {},
-                qcmStats: {
+                flashcardSrs: {},
+                qcmStats:
                     totalAnswered: 0,
                     totalCorrect: 0,
                     bySession: {
