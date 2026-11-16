@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ecomaster-l1-v1';
+const CACHE_NAME = 'ecomaster-l1-v2';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon.svg'];
 
 self.addEventListener('install', event => {
